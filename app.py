@@ -8,11 +8,13 @@ app = Flask(__name__)
 def index():
     return jsonify('index': "PAE IoT"), 200
 
-@app.route('/getip', methods=["GET"])
-def get_ip():
-    path = 'https://{0}:{1}/{2}'.format(request.remote_addr, "5000", "getstring")
-    r = requests.get(path)
-    return jsonify({'ip': request.remote_addr.to_s+" GOT you!", 'string': r.text}), 200
+@app.route('/impulse', methods=["POST"])
+def treat_impulse():
+    return jsonify({'impulse': request.POST.get('data')), 200
+
+@app.route('/voice', methods=["POST"])
+def treat_voice():
+    return jsonify({'voice': request.POST.get('data')), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=911)
