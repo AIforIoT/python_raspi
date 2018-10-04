@@ -7,4 +7,6 @@ def create_app():
     from .routes import voice_routes
     app.register_blueprint(voice_routes.bp)
 
+    from .data_service import data_service
+
     return app
