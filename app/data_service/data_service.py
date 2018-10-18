@@ -10,11 +10,10 @@ class Data_service:
         esp_id = jsonData['esp_id']
         delay = jsonData['delay']
         power = jsonData['power']
-        frame_id = jsonData['frame_id']
         offset = jsonData['offset']
 
         #Dummy numpy object. TODO: Replace by real object with voice data
-        numpy_data = np.empty([2, 2], dtype=int).tostring()
+        numpy_data = np.empty([131295], dtype=int).tolist()
 
-        data_frame = FrameData(numpy_data, esp_id, frame_id, delay, power, offset)
+        data_frame = FrameData(str(numpy_data), esp_id, delay, power, offset)
         return data_frame

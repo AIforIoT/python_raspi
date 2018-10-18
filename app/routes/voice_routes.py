@@ -13,8 +13,7 @@ def get_impulse():
     data_frame = data_service.process_impulse_data(request.data)
 
     #EXAMPLE: PERFORM RPC REQUEST:
-    print('dataRequest: *****************'+str(request.data))
     rpc_server = xmlrpc.client.ServerProxy('http://localhost:8082/api')
-    print(rpc_server.hello(data_frame))
+    rpc_server.send_data_request_object(data_frame)
 
     return 'OK', 200
