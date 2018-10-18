@@ -1,9 +1,8 @@
 import os
 
-
 '''
 The object FrameData must contain all the information about a frame. 
-The ConfigParams object must contain the following information: esp_id, frame_id, delay, power and offset. All this 
+The ConfigParams object must contain the following information: esp_id, delay, power and offset. All this 
 values must be stored as string.
 The numpy_data object must be a numpy object formatted as string and it contains the data form voice.
 '''
@@ -11,14 +10,12 @@ The numpy_data object must be a numpy object formatted as string and it contains
 
 class ConfigParams:
     __esp_id: object
-    __frame_id: object
     __delay: object
     __power: object
     __offset: object
 
-    def __init__(self, esp_id, frame_id, delay, power, offset):
+    def __init__(self, esp_id, delay, power, offset):
         self.esp_id = esp_id
-        self.frame_id = frame_id
         self.delay = delay
         self.power = power
         self.offset = offset
@@ -31,14 +28,6 @@ class ConfigParams:
     @esp_id.setter
     def esp_id(self, val):
         self.__esp_id = val
-
-    @property
-    def frame_id(self):
-        return self.__frame_id
-
-    @frame_id.setter
-    def frame_id(self, val):
-        self.__frame_id = val
 
     @property
     def delay(self):
@@ -68,9 +57,9 @@ class FrameData:
     __numpy_data = object
     __config_params = object
 
-    def __init__(self, numpy_data, esp_id, frame_id, delay, power, offset):
+    def __init__(self, numpy_data, esp_id, delay, power, offset):
         self.numpy_data = numpy_data
-        self.config_params = ConfigParams(esp_id, frame_id, delay, power, offset)
+        self.config_params = ConfigParams(esp_id, delay, power, offset)
 
 
     @property
