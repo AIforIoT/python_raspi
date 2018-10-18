@@ -1,6 +1,6 @@
 from flask import (Blueprint, request)
-from app.data_service.data_service import Data_service
 import xmlrpc.client
+from app.data_service.data_service import Data_service
 
 bp = Blueprint('voice_routes', __name__, url_prefix='/voice')
 
@@ -12,7 +12,7 @@ def get_impulse():
 
     #EXAMPLE: PERFORM RPC REQUEST:
     print('dataRequest: *****************'+str(request.data))
-    #rpc_server = xmlrpc.client.ServerProxy('http://localhost:8092')
-    #print(rpc_server.pow(2,3))
+    rpc_server = xmlrpc.client.ServerProxy('http://localhost:8082/api')
+    print(rpc_server.hello("PLEASE"))
 
     return 'OK', 200
