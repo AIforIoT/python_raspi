@@ -1,4 +1,6 @@
 import json
+from app.models.data_request_object import ConfigParams, FrameData
+import numpy as np
 
 class Data_service:
 
@@ -8,8 +10,11 @@ class Data_service:
         esp_id = jsonData['esp_id']
         delay = jsonData['delay']
         power = jsonData['power']
-        data = jsonData['data']
+        frame_id = jsonData['frame_id']
+        offset = jsonData['offset']
 
-        print(', esp_id: '+str(esp_id)+', delay: '+str(delay)+'pow: '+str(power)+', data: '+str(data))
+        #Dummy numpy object. TODO: Replace by real object with voice data
+        numpy_data = np.empty([2, 2], dtype=int).tostring()
 
-        #TODO: redirect to impulse functionality
+        data_frame = FrameData(numpy_data, esp_id, frame_id, delay, power, offset)
+        return data_frame

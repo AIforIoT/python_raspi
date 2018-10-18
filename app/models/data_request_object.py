@@ -1,5 +1,14 @@
 import os
 
+
+'''
+The object FrameData must contain all the information about a frame. 
+The ConfigParams object must contain the following information: esp_id, frame_id, delay, power and offset. All this 
+values must be stored as string.
+The numpy_data object must be a numpy object formatted as string and it contains the data form voice.
+'''
+
+
 class ConfigParams:
     __esp_id: object
     __frame_id: object

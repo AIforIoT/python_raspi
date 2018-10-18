@@ -3,9 +3,9 @@ from rpc_api import handler
 
 
 @handler.register
-def hello(name="world"):
-    if not name:
-        raise Fault("unknown_recipient", "I need someone to greet!")
-    return "Hello, %s!" % name
+def hello(data_request_object):
+    print("HELLO: ")
+    print(data_request_object)
+
 
 
