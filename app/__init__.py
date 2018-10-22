@@ -1,4 +1,5 @@
 from flask import Flask
+from app.database.database import db_session, init_db
 
 def create_app():
     # create and configure the app
@@ -8,5 +9,7 @@ def create_app():
     app.register_blueprint(voice_routes.bp)
 
     from .data_service import data_service
+
+    init_db()
 
     return app
