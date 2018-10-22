@@ -14,14 +14,7 @@ def send_data_request_object(data_request_object):
         config_params = data_request_object['_FrameData__config_params']
 
         numpy_data = data_request_object['_FrameData__numpy_data']
-        r = numpy_data.replace("'",'')
-        numpy_data = json.loads(r)
         numpy_data = np.array(numpy_data)
-
-        print("TEST:")
-        print(type(numpy_data) != 'numpy.ndarray')
-        #if numpy_data isinstance('numpy.ndarray'):
-        #    return 400, 'Unable to deserialize numpy object'
 
         #TODO: do something with data_request_object
 
