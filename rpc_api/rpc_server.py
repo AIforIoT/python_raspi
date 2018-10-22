@@ -20,8 +20,6 @@ def send_data_request_object(data_request_object):
 
         print("TEST:")
         print(type(numpy_data) != 'numpy.ndarray')
-        #if numpy_data isinstance('numpy.ndarray'):
-        #    return 400, 'Unable to deserialize numpy object'
 
         #TODO: do something with data_request_object
 

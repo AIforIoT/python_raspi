@@ -13,6 +13,7 @@ class ConfigParams:
     __delay: object
     __power: object
     __offset: object
+    __timestamp: object
 
     def __init__(self, esp_id, delay, power, offset, timestamp):
         self.esp_id = esp_id
