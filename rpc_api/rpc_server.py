@@ -16,7 +16,6 @@ def send_data_request_object(data_request_object):
         numpy_data = np.array(numpy_data)
         data_type = data_request_object['_FrameData__data_type']
 
-
         print(data_type)
         print("data type: "+str(data_type))
         #TODO: do something with data_request_object

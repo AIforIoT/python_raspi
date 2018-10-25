@@ -1,5 +1,5 @@
 import json
-from app.models.data_request_object import ConfigParams, FrameData
+from app.models.data_request_object import ConfigParams, FrameData, DEFAULT_TYPES
 import numpy as np
 
 class Data_service:
@@ -12,7 +12,7 @@ class Data_service:
         delay = jsonData['delay']
         power = jsonData['power']
         offset = jsonData['offset']
-        data_type = "iouti"
+        data_type = 0
 
         #Dummy numpy object. TODO: Replace by real object with voice data
         numpy_data = np.empty([131295], dtype=int)

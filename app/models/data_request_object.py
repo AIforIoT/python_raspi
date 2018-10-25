@@ -1,5 +1,10 @@
 import os
 
+DEFAULT_TYPES = {
+    "IOUTI": 0,
+    "VOICE_DATA": 1
+}
+
 '''
 The object FrameData must contain all the information about a frame. 
 The ConfigParams object must contain the following information: esp_id, delay, power and offset. All this 
