@@ -15,15 +15,22 @@ class Data_service:
         offset = jsonData['offset']
         data_type = 0
 
-<<<<<<< Updated upstream
         #Dummy numpy object. TODO: Replace by real object with voice data
         numpy_data = np.empty([131295], dtype=int)
         numpy_data = np.array2string(numpy_data)
-=======
-        #Dummy numpy object.
-        #TODO: Replace by real object with voice data
-        numpy_data = np.empty([131295], dtype=int).tolist()
->>>>>>> Stashed changes
 
         data_frame = FrameData(numpy_data, data_type, esp_id, delay, power, offset, timestamp)
         return data_frame
+
+
+    def save_esp_setup_data(self, esp_data):
+
+        jsonData = json.loads(esp_data)
+        esp_id = jsonData['esp_id']
+        esp_ip = jsonData['esp_ip']
+        esp_type = jsonData['esp_type']
+        esp_x_axis = jsonData['esp_x_axis']
+        esp_y_axis = jsonData['esp_y_axis']
+
+        #TODO: store data in a static db
+
