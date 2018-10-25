@@ -4,6 +4,7 @@ import numpy as np
 
 class Data_service:
 
+    
     def process_impulse_data(self, impulse_data):
 
         jsonData = json.loads(impulse_data)
@@ -14,9 +15,15 @@ class Data_service:
         offset = jsonData['offset']
         data_type = 0
 
+<<<<<<< Updated upstream
         #Dummy numpy object. TODO: Replace by real object with voice data
         numpy_data = np.empty([131295], dtype=int)
         numpy_data = np.array2string(numpy_data)
+=======
+        #Dummy numpy object.
+        #TODO: Replace by real object with voice data
+        numpy_data = np.empty([131295], dtype=int).tolist()
+>>>>>>> Stashed changes
 
         data_frame = FrameData(numpy_data, data_type, esp_id, delay, power, offset, timestamp)
         return data_frame
