@@ -29,3 +29,17 @@ class DBService:
             frame = frame.__dict__
             numpy_data = frame['_FrameData__numpy_data']
             print(numpy_data)
+
+
+    def get_coordenates_by_esp_id(self, esp_id):
+
+        #TODO
+        x = 3
+        y = 4
+        return x, y
+
+
+    def get_delay_by_esp_id(self, esp_id):
+
+        delay = 3820
+        return delay
