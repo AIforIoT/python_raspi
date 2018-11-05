@@ -39,6 +39,8 @@ class Data_service:
         esp_type = jsonData['esp_type']
         esp_x_axis = jsonData['esp_x_axis']
         esp_y_axis = jsonData['esp_y_axis']
+        esp_y_axis = jsonData['side']
+        esp_y_axis = jsonData['location']
 
         #TODO: store data in a static db
 

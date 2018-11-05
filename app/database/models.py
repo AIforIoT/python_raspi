@@ -26,22 +26,25 @@ class SQLFrame(Base):
         return FrameData(self.numpy_data, self.esp_id, self.delay, self.power, self.offset, self.timestamp)
 
 
-class ESPinfo(Base):
+class ESPdata(Base):
     __tablename__ = 'esp_data'
     id = Column(Integer, primary_key=True)
     esp_id = Column(String(50), unique=True)
     esp_ip = Column(String(50), unique=True)
-    x = Column(Integer(50))
-    y = Column(Integer(50))
+    x = Column(String(50))
+    y = Column(String(50))
     type = Column(String(50))
+    side = Column(String(50))
+    location = Column(String(50))
 
-    def __init__(self, esp_id=None, esp_ip=None, x=None, y=None, type=None):
+    def __init__(self, esp_id=None, esp_ip=None, x=None, y=None, type=None, side=None, location=None):
         self.esp_id = esp_id
         self.esp_ip = esp_ip
         self.__x = x
         self.__y = y
         self.__type = type
-
+        self.__side = side
+        self.__location = location
 
     def __repr__(self):
-        return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type)
+        return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location)

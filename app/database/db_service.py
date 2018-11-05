@@ -20,10 +20,18 @@ class DBService:
         offset = config_params['_ConfigParams__offset']
         timestamp = config_params['_ConfigParams__timestamp']
 
+
+        #TODO: REFACTOR
         sqlframe = SQLFrame(numpy_data, esp_id, delay, power, offset, timestamp)
         db_session.add(sqlframe)
         db_session.commit()
 
+        #TODO refactor the data above to take into account the following info:
+            #IF esp_id is registered in the database:
+                #update field
+            #ELSE save new data
+
+        #THE FOLLOWING CODE is a test that gets all SQLFrame entities stored in the db.
         results = SQLFrame.query.all()
         for frame in results:
             frame = frame.__dict__
@@ -33,13 +41,21 @@ class DBService:
 
     def get_coordenates_by_esp_id(self, esp_id):
 
-        #TODO
+        #TODO: check in 'esp_data' table if there is a ESPdata stored object with 'esp_id':
+            #IF SO:
+               #GET ESPdata object and return attributes x and y.
+            #ELSE:
+                #RETURN a null, null object that indicates there is no esp stored with such esp_id
         x = 3
         y = 4
         return x, y
 
 
     def get_delay_by_esp_id(self, esp_id):
+
+        #TODO: check in 'frame_data' table if there is a SQLFrame stored object with 'esp_id':
+            #If so:
+                #get
 
         delay = 3820
         return delay

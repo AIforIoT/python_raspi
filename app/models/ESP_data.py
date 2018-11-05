@@ -1,17 +1,25 @@
 
+'''
+This object contains all the relevant information about an ESP.
+'''
+
 class ESP_data:
     __esp_id = object
     __esp_ip = object
     __x = object
     __y = object
     __type = object
+    __side = object
+    __location = object
 
-    def __init__(self, esp_id, esp_ip, x, y, type):
+    def __init__(self, esp_id, esp_ip, x, y, type, side, location):
         self.__esp_id = esp_id
         self.__esp_ip = esp_ip
         self.__x = x
         self.__y = y
         self.__type = type
+        self.__side = side
+        self.__location = location
 
 
     @property
@@ -42,7 +50,7 @@ class ESP_data:
     def y(self):
         return self.__y
 
-    @x.setter
+    @y.setter
     def y(self, val):
         self.__y = val
 
@@ -50,7 +58,23 @@ class ESP_data:
     def type(self):
         return self.__type
 
-    @x.setter
+    @type.setter
     def type(self, val):
         self.__type = val
 
+
+    @property
+    def side(self):
+        return self.__side
+
+    @side.setter
+    def side(self, val):
+        self.__side = val
+
+    @property
+    def location(self):
+        return self.__location
+
+    @location.setter
+    def location(self, val):
+        self.__location = val
