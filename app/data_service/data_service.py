@@ -1,6 +1,6 @@
 import json
 from app.models.data_request_object import ConfigParams, FrameData, DEFAULT_TYPES
-from app.models.data_request_object import ConfigParams, FrameData
+from app.models.ESP_data import ESP_data
 from app.database.db_service import DBService
 import numpy as np
 
@@ -8,8 +8,8 @@ db_service = DBService()
 
 class Data_service:
 
-
-    def process_impulse_data(self, impulse_data):
+    #Parses the received 'impulse_data' into a FrameData object and send a db request to store it.
+    def process_data(self, impulse_data):
 
         jsonData = json.loads(impulse_data)
         esp_id = jsonData['esp_id']
@@ -31,16 +31,26 @@ class Data_service:
         return data_frame
 
 
-    def save_esp_setup_data(self, esp_data):
+    def process_data_request(self, data):
 
-        jsonData = json.loads(esp_data)
+        #TODO: data_type = 0:
+
+        #TODO: data_type = 1:
+        return None
+
+
+
+    def save_esp_setup_data(self, esp_init_data):
+
+        jsonData = json.loads(esp_init_data)
         esp_id = jsonData['esp_id']
         esp_ip = jsonData['esp_ip']
         esp_type = jsonData['esp_type']
         esp_x_axis = jsonData['esp_x_axis']
         esp_y_axis = jsonData['esp_y_axis']
-        esp_y_axis = jsonData['side']
-        esp_y_axis = jsonData['location']
+        side = jsonData['side']
+        location= jsonData['location']
 
-        #TODO: store data in a static db
+        esp_to_register = ESP_data(esp_id, esp_ip, esp_x_axis, esp_y_axis, esp_type, side, location)
 
+        db_service.register_esp(esp_to_register)
