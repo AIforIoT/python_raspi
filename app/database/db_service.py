@@ -49,8 +49,11 @@ class DBService:
         #GET ESPdata object and return attributes x and y.
         #ELSE 'NOT FOUND' -> no dafa found for 'esp_id'
 
-        x = 3
-        y = 4
+        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
+        if esp_data is None:
+            return None
+        x = esp_data.x
+        y = esp_data.y
         return x, y
 
 
@@ -61,8 +64,10 @@ class DBService:
         #If so:
         #get the ESPdata frame and return the field 'delay'
         #ELSE 'NOT FOUND' -> no dafa found for 'esp_id'
-
-        delay = 3820
+        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
+        if esp_data is None:
+            return None
+        delay = esp_data.delay
         return delay
 
     #Register a new esp into de esp_data db table.

@@ -53,14 +53,16 @@ def get_audio():
                 # KeyWord Spotting
                 to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
                 client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                client.send_data_request_object(to_send)
+                keyword_found = client.send_data_request_object(to_send)
+
+                if keyword_found:
+                    green.on()
 
                 # Truncate
                 buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                 positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
 
     else:
-        # Speech to text? -> Other buffer
         if ide not in commandsBufferDict:
             commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
             commandsPositionDict[ide] = 0
@@ -93,11 +95,30 @@ def end_sending():
 
     :return: 200 OK ot 500 Error
     """
-    global keyword_found, led
+    global keyword_found, green
 
     rdata = json.loads(request.data)
     ide = rdata['ide']
     data = rdata['data']
+
+    if ide not in commandsBufferDict:
+        commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
+        commandsPositionDict[ide] = 0
+
+    # data = request.data.split(b',')
+    for d in data:
+        byte = 0
+        try:
+            byte = int(d)
+        except ValueError:
+            print("Error.... byte not int")
+
+        commandsBufferDict[ide][int(commandsPositionDict[ide])] = byte
+        commandsPositionDict[ide] += 1
+
+        if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE:  # The buffer can overflow here!!
+            print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+            break
 
     if commandsPositionDict[ide] is not 0:
         print("End sending cmd")
@@ -112,14 +133,3 @@ def end_sending():
 
     green.off()
     return "200", "OK"
-
-
-@bp.route('/keyword_detected', methods=['GET'])
-def keyword_detector():
-    global keyword_found, led
-
-    green.on()
-    keyword_found = True
-    return "200"
-
-
