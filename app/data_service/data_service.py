@@ -1,5 +1,5 @@
 import json
-from app.models.data_request_object import ConfigParams, FrameData, DEFAULT_TYPES
+from app.models.data_request_object import FrameData, DEFAULT_TYPES
 from app.models.ESP_data import ESP_data
 from app.database.db_service import DBService
 import numpy as np
