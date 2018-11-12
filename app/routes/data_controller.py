@@ -3,6 +3,8 @@ from flask import Blueprint, request
 import numpy as np
 from app.models.data_request_object import FrameData
 import xmlrpc.client
+import json
+from gpiozero import LED
 
 bp = Blueprint('data_controller', __name__)
 
@@ -16,25 +18,28 @@ commandsBufferDict = dict()
 commandsPositionDict = dict()
 
 keyword_found = False
+led = LED(4)
 
 
-@bp.route('/audio/<ide>/<delay>/<timestamp>', methods=['POST'])
-def get_audio(ide, delay, timestamp):
+@bp.route('/audio', methods=['POST'])
+def get_audio():
     """
     ESP32 is sending us audio buffer!
 
-    :param ide: Id of the ESP32.
-    :param delay: Delay between bitcon and sound detected.
-    :param timestamp:
     :return: 200 OK
     """
     global keyword_found
+
+    rdata = json.loads(request.data)
+    ide = rdata['ide']
+    data = rdata['data']
+
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
         positionsDict[ide] = 0
 
     if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
-        data = request.data.split(b',')
+        # data = request.data.split(b',')
         for d in data:
             byte = 0
             try:
@@ -45,7 +50,7 @@ def get_audio(ide, delay, timestamp):
             positionsDict[ide] += 1
             if positionsDict[ide] >= BUFFER_MAX_SIZE:
                 # KeyWord Spotting
-                to_send = FrameData(np.array2string(buffersDict[ide]), ide, delay, str(positionsDict[ide]), timestamp)
+                to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
                 client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
                 client.hello(to_send)
 
@@ -59,12 +64,12 @@ def get_audio(ide, delay, timestamp):
             commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
             commandsPositionDict[ide] = 0
 
-        data = request.data.split(b',')
+        # data = request.data.split(b',')
         for d in data:
             byte = 0
             try:
                 byte = int(d)
-            except:
+            except ValueError:
                 print("Error.... byte not int")
             
             commandsBufferDict[ide][int(commandsPositionDict[ide])] = byte
@@ -79,36 +84,41 @@ def get_audio(ide, delay, timestamp):
     return "200"
 
 
-@bp.route('/audio/<ide>/<delay>/<timestamp>', methods=['GET'])
-def end_sending(ide, delay, timestamp):
+@bp.route('/audio/end', methods=['POST'])
+def end_sending():
     """
     The tx was ended, its time to speech recognition!
     For esp32 speech buffer calculate the one with more power and send it to the speech recognition engine.
 
-    :param ide: ESP32 ID
-    :param delay: Delay between bitcon and sound detected.
-    :param timestamp: A TimeStamp
     :return: 200 OK ot 500 Error
     """
-    print("End of transmision for {} with delay: {}".format(ide, delay))
-    global keyword_found
+    global keyword_found, led
+
+    rdata = json.loads(request.data)
+    ide = rdata['ide']
+    data = rdata['data']
+
     if commandsPositionDict[ide] is not 0:
         print("End sending cmd")
 
-        to_send = FrameData(np.array2string(commandsBufferDict[ide]), '1', ide, delay, 'None', str(commandsPositionDict[ide]), timestamp)
+        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
         client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
         client.hello(to_send)
 
     keyword_found = False
     commandsPositionDict[ide] = 0
     positionsDict[ide] = 0
-    return 200
+
+    led.off()
+    return "200", "OK"
 
 
 @bp.route('/keyword_detected', methods=['GET'])
 def keyword_detector():
-    global keyword_found
+    global keyword_found, led
+
+    led.on()
     keyword_found = True
-    return 200
+    return "200"
 
 
