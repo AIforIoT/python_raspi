@@ -18,7 +18,8 @@ commandsBufferDict = dict()
 commandsPositionDict = dict()
 
 keyword_found = False
-led = LED(4)
+green = LED(4)
+red = LED(3)
 
 
 @bp.route('/audio', methods=['POST'])
@@ -52,7 +53,7 @@ def get_audio():
                 # KeyWord Spotting
                 to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
                 client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                client.hello(to_send)
+                client.send_data_request_object(to_send)
 
                 # Truncate
                 buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
@@ -103,13 +104,13 @@ def end_sending():
 
         to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
         client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-        client.hello(to_send)
+        client.send_data_request_object(to_send)
 
     keyword_found = False
     commandsPositionDict[ide] = 0
     positionsDict[ide] = 0
 
-    led.off()
+    green.off()
     return "200", "OK"
 
 
@@ -117,7 +118,7 @@ def end_sending():
 def keyword_detector():
     global keyword_found, led
 
-    led.on()
+    green.on()
     keyword_found = True
     return "200"
 
