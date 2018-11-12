@@ -1,9 +1,11 @@
-import json
+import json, time
 from app.models.data_request_object import ConfigParams, FrameData, DEFAULT_TYPES
 from app.models.ESP_data import ESP_data
 from app.database.db_service import DBService
 import numpy as np
+from threading import Timer
 
+REQUEST_DATA_TIME=10.0
 db_service = DBService()
 
 class Data_service:
@@ -54,3 +56,30 @@ class Data_service:
         esp_to_register = ESP_data(esp_id, esp_ip, esp_x_axis, esp_y_axis, esp_type, side, location)
 
         db_service.register_esp(esp_to_register)
+
+    def request_esp_data(self):
+        print("TIME is: "+str(time.time()))
+
+
+    def process_volume(self, data):
+
+        jsonData = json.loads(data)
+        esp_id = jsonData['esp_id']
+        timestamp = jsonData['timestamp']
+        delay = jsonData['delay']
+        volume = jsonData['volume']
+
+
+        db_service.save_volume_data(volume_data)
+
+        #Timer executes func  after 30s
+        t = Timer(REQUEST_DATA_TIME, self.request_esp_data)
+        t.start()
+        print("ESTOY HACIENDO OTRAS COSAS???")
+
+        #TODO: check if there is the first timestamp for esp_id stored
+            #If so:  wake up cron after 30ms
+
+        #Store data in db
+
+
