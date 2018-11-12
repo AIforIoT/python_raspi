@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 from flask import Blueprint, request
 import numpy as np
-import struct
 from app.models.data_request_object import FrameData
 import xmlrpc.client
 
@@ -29,6 +28,7 @@ def get_audio(ide, delay, timestamp):
     :param timestamp:
     :return: 200 OK
     """
+    global keyword_found
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
         positionsDict[ide] = 0
@@ -44,18 +44,14 @@ def get_audio(ide, delay, timestamp):
             buffersDict[ide][int(positionsDict[ide])] = byte
             positionsDict[ide] += 1
             if positionsDict[ide] >= BUFFER_MAX_SIZE:
-                # Noise attenuation of some kind?
                 # KeyWord Spotting
-                #print("Keyword spotting")
-                #print(buffersDict[ide])
-                to_send = FrameData(np.array2string(buffersDict[ide]), '0', ide, delay, 'None', str(positionsDict[ide]), timestamp)
+                to_send = FrameData(np.array2string(buffersDict[ide]), ide, delay, str(positionsDict[ide]), timestamp)
                 client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
                 client.hello(to_send)
 
                 # Truncate
                 buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                 positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-                #print(positionsDict[ide])
 
     else:
         # Speech to text? -> Other buffer
@@ -95,6 +91,7 @@ def end_sending(ide, delay, timestamp):
     :return: 200 OK ot 500 Error
     """
     print("End of transmision for {} with delay: {}".format(ide, delay))
+    global keyword_found
     if commandsPositionDict[ide] is not 0:
         print("End sending cmd")
 
@@ -110,6 +107,7 @@ def end_sending(ide, delay, timestamp):
 
 @bp.route('/keyword_detected', methods=['GET'])
 def keyword_detector():
+    global keyword_found
     keyword_found = True
     return 200
 

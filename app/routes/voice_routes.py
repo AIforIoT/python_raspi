@@ -35,9 +35,9 @@ def get_volume():
 
     #TODO:
     #1: Store volume data in memory.
-    #2: timeout = Timer(1,fn,args)
+    #2: if not timeout: timeout = Timer(1,timer,args)
     return None
 
 def timer():
-    ...
+    #TODO: Compute volume. and notify
     timeout = None
