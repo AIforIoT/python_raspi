@@ -1,6 +1,6 @@
 
 
-class volume_data:
+class Volume_data:
     __esp_id = object
     __timestamp = object
     __delay = object
