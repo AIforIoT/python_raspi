@@ -30,5 +30,3 @@ def save_esp_setup_data():
 def get_volume():
     data_service.process_volume(request.data)
     return 'OK', 200
-
-
