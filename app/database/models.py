@@ -36,8 +36,10 @@ class ESPdata(Base):
     type = Column(String(50))
     side = Column(String(50))
     location = Column(String(50))
+    delay = Column(String(50))
+    timestamp = Column(String(50))
 
-    def __init__(self, esp_id=None, esp_ip=None, x=None, y=None, type=None, side=None, location=None):
+    def __init__(self, esp_id=None, esp_ip=None, x=None, y=None, type=None, side=None, location=None, delay=0, timestamp=0):
         self.esp_id = esp_id
         self.esp_ip = esp_ip
         self.__x = x
@@ -45,6 +47,8 @@ class ESPdata(Base):
         self.__type = type
         self.__side = side
         self.__location = location
+        self.__delay = delay
+        self.__timestamp = timestamp
 
     def __repr__(self):
-        return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location)
+        return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location, self.delay, self.timestamp)

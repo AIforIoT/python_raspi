@@ -2,35 +2,8 @@ from app.database.database import db_session, engine
 from app.database.models import SQLFrame, ESPdata
 from sqlalchemy import inspect
 from sqlalchemy import MetaData
-from app.models.data_request_object import FrameData, ConfigParams
 
 class DBService:
-
-    #TEST: This method save the frame_data in the sqlalchemy db and then, gets all the data stored in the db
-    def save_FrameData(self, frame_data):
-
-        frame_data = frame_data.__dict__
-
-        #Deserialize data_request object
-        numpy_data = frame_data['_FrameData__numpy_data']
-        config_params = frame_data['_FrameData__config_params'].__dict__
-        esp_id = config_params['_ConfigParams__esp_id']
-        delay = config_params['_ConfigParams__delay']
-        power = config_params['_ConfigParams__power']
-        offset = config_params['_ConfigParams__offset']
-        timestamp = config_params['_ConfigParams__timestamp']
-
-        #db object
-        sqlframe = SQLFrame(numpy_data, esp_id, delay, power, offset, timestamp)
-
-        #This code save the SQLFrame in the db with no checks.
-        db_session.add(sqlframe)
-        db_session.commit()
-
-        #TODO refactor the data above to take into account the following info:
-        #If there is already a SQLframe object with 'esp_id' registered in the database:
-        #update field
-        #ELSE save as new entry
 
 
     #This method is a test that gets all SQLFrame entities stored in the db and print its numpy_data object.
@@ -44,25 +17,21 @@ class DBService:
     #Get in the 'esp_data' table the ESPdata object with 'esp_id', and return its coordenates (x, y)
     def get_coordenates_by_esp_id(self, esp_id):
 
-        #TODO: check in 'esp_data' table if there is a ESPdata stored object with 'esp_id':
-        #IF SO:
-        #GET ESPdata object and return attributes x and y.
-        #ELSE 'NOT FOUND' -> no dafa found for 'esp_id'
-
-        x = 3
-        y = 4
+        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
+        if esp_data is None:
+            return None
+        x = esp_data.x
+        y = esp_data.y
         return x, y
 
 
     #Get in the 'frame_data' table the SQLFrame with 'esp_id' and return its 'delay' field
     def get_delay_by_esp_id(self, esp_id):
 
-        #TODO: check in 'frame_data' table if there is a SQLFrame stored object with 'esp_id':
-        #If so:
-        #get the ESPdata frame and return the field 'delay'
-        #ELSE 'NOT FOUND' -> no dafa found for 'esp_id'
-
-        delay = 3820
+        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
+        if esp_data is None:
+            return None
+        delay = esp_data.delay
         return delay
 
     #Register a new esp into de esp_data db table.
