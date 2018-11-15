@@ -15,7 +15,7 @@ The numpy_data object must be a numpy object formatted as string and it contains
 class FrameData:
     __numpy_data = object
     __esp_id = object
-    __offset: object
+    __offset = object
 
     def __init__(self, numpy_data, esp_id, offset):
         self.numpy_data = numpy_data
