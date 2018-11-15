@@ -1,10 +1,7 @@
-from app.database.database import db_session, engine
+from app.database.database import db_session
 from app.database.models import SQLFrame, ESPdata
-from sqlalchemy import inspect
-from sqlalchemy import MetaData
 
 class DBService:
-
 
     #This method is a test that gets all SQLFrame entities stored in the db and print its numpy_data object.
     def print_all_registered_SQLFrame(self):
@@ -58,6 +55,9 @@ class DBService:
             esp = esp.__dict__
             print(esp['__ESP_data__esp_id'])
 
+    def get_all_esps(self):
+        #TODO: MIREU QUE AIXO SIGUI CORRECTE I BORREU EL WARNING XD!!!!!!!!!!!!!!!!!
+        return ESPdata.query.all()
 
     def save_volume_data(self, volume_data):
         #todo: save volume_data
@@ -81,4 +81,8 @@ class DBService:
 
     def get_esp_with_type_different(self, type):
         #todo: return a list of esps with type field different from 'type'
+        return None
+
+    def get_esp_with_esp_id_different_from(self, esp_id):
+        #todo: return a list with all esp registered that esp_id field is different from 'esp_id'
         return None

@@ -20,17 +20,19 @@ http_client = HTTP_CLIENT()
 
 class Http_service:
 
-    #This method performs an http request to every esp contained in the 'list_esps' with and an action (ON/OFF)
+    #This method performs a request to every esp contained in the 'list_esps' with and an action
     def send_http_action(self, list_esps, action):
         #todo: change esp.get_esp_id() for real method
+        for esp in list_esps:
+            self.send_http_action_to_esp_id(esp.get_esp_ip(), REQUEST_PATH.TURN_ON)
+
+    #Generate an http request for host depending on its action (ON/OFF)
+    def send_http_action_to_esp_id(self, host, action):
         if action is DEFAULT_ACTIONS.ON:
-            for esp in list_esps:
-                http_client.send_GET_request(esp.get_esp_ip(), REQUEST_PATH.TURN_ON)
+            http_client.send_GET_request(host, REQUEST_PATH.TURN_ON)
 
         elif action is DEFAULT_ACTIONS.OFF:
-            for esp in list_esps:
-                http_client.send_GET_request(esp.get_esp_ip(), REQUEST_PATH.TURN_OFF)
-
+            http_client.send_GET_request(host, REQUEST_PATH.TURN_OFF)
 
     #This method sends an http request to all esps in the 'list_esps' informing the status has to change to 'volume'.
     def request_esp_volumes(self, list_esps):
