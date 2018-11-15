@@ -25,13 +25,6 @@ class Data_service:
         numpy_data = np.empty([131295], dtype=int)
         numpy_data = np.array2string(numpy_data)
 
-        #data_frame = FrameData(numpy_data, data_type, esp_id, delay, power, offset, timestamp)
-
-        #TEST DB:
-        #db_service.save_FrameData(data_frame)
-
-        #return data_frame
-
 
     def process_data_request(self, data):
 

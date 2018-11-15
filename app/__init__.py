@@ -10,7 +10,7 @@ def create_app():
     app.register_blueprint(data_controller.bp)
 
     from .data_service import data_service
-    from .models.data_request_object import FrameData, ConfigParams
+    from .models.data_request_object import FrameData
 
     init_db()
 
