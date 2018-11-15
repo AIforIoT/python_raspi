@@ -4,7 +4,7 @@ import numpy as np
 from app.models.data_request_object import FrameData
 import xmlrpc.client
 import json
-from gpiozero import LED
+#from gpiozero import LED
 
 bp = Blueprint('data_controller', __name__)
 
@@ -18,8 +18,8 @@ commandsBufferDict = dict()
 commandsPositionDict = dict()
 
 keyword_found = False
-green = LED(4)
-red = LED(3)
+#green = LED(4)
+#red = LED(3)
 
 
 @bp.route('/audio', methods=['POST'])
@@ -56,8 +56,8 @@ def get_audio():
                 keyword_found = client.send_data_request_object(to_send)
 
                 if keyword_found:
-                    green.on()
-
+                    #green.on()
+                    pass
                 # Truncate
                 buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                 positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
@@ -131,5 +131,5 @@ def end_sending():
     commandsPositionDict[ide] = 0
     positionsDict[ide] = 0
 
-    green.off()
+    #green.off()
     return "200", "OK"
