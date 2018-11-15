@@ -36,8 +36,8 @@ class Data_service:
 
 
     def save_esp_setup_data(self, esp_init_data):
-
-        jsonData = json.loads(esp_init_data)
+     
+        jsonData = json.loads(esp_init_data.decode("utf-8"))
         esp_id = jsonData['esp_id']
         esp_ip = jsonData['esp_ip']
         esp_type = jsonData['esp_type']

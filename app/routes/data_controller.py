@@ -31,8 +31,10 @@ def get_audio():
     """
     global keyword_found
 
+    print(request.data)
+
     rdata = json.loads(request.data)
-    ide = rdata['ide']
+    ide = 0 #rdata['ide']
     data = rdata['data']
 
     if ide not in buffersDict:
