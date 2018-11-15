@@ -61,11 +61,11 @@ class DBService:
 
     def save_volume_data(self, volume_data):
         #todo: save volume_data
-        return None
+        pass
 
     def delete_all_volumes(self):
         #todo: delete all volume_data entities stored in the db
-        return None
+        pass
 
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
@@ -73,4 +73,12 @@ class DBService:
 
     def get_all_volumes_by_timestamp(self, timestamp):
         #todo: Return the volume_data object with 'timestamp'
+        return None
+
+    def get_esp_by_type(self, type):
+        #todo: from the registered esps, return a list with the ones with 'type'
+        return None
+
+    def get_esp_with_type_different(self, type):
+        #todo: return a list of esps with type field different from 'type'
         return None
