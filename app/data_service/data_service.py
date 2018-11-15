@@ -59,10 +59,10 @@ class Data_service:
         for esp_volume in active_esps_volumes:
             if (esp_volume.get_volume == active_esp_with_max_volume.get_volume):
                 #TODO: client: send http request to esp with info: I don't want your data
-                None
+                pass
             else:
                 #TODO: client: send http request to esp with info: I DO want your data
-                None
+                pass
 
     def process_volume(self, data):
 

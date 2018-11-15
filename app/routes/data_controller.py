@@ -2,12 +2,14 @@
 from flask import Blueprint, request
 import numpy as np
 from app.models.data_request_object import FrameData
+from app.processor.process_info import Info_processor
 import xmlrpc.client
 import json
 from gpiozero import LED
 
 bp = Blueprint('data_controller', __name__)
 
+info_processor = Info_processor()
 BUFFER_MAX_SIZE = 16000  # Size of the buffer (To be changed)
 BUFFER_CMD_MAX_SIZE = 64000  # Size of the buffer that will save the whole audio. (To be changed)
 
@@ -54,6 +56,10 @@ def get_audio():
                 to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
                 client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
                 keyword_found = client.send_data_request_object(to_send)
+
+                #TODO: parse keyword_found and check the STATUS field. OPTIONS:
+                    # SHOULD BE: KEYWORD_YES, KEYWORD_NO, VALUABLE_DATA_YES VALUABLE_DATA_NO -> to define!
+                # if valuable data: info_processor.process_AI_data(data)
 
                 if keyword_found:
                     green.on()
