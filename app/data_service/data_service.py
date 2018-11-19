@@ -25,13 +25,6 @@ class Data_service:
         numpy_data = np.empty([131295], dtype=int)
         numpy_data = np.array2string(numpy_data)
 
-        #data_frame = FrameData(numpy_data, data_type, esp_id, delay, power, offset, timestamp)
-
-        #TEST DB:
-        #db_service.save_FrameData(data_frame)
-
-        #return data_frame
-
 
     def process_data_request(self, data):
 
@@ -43,8 +36,8 @@ class Data_service:
 
 
     def save_esp_setup_data(self, esp_init_data):
-
-        jsonData = json.loads(esp_init_data)
+     
+        jsonData = json.loads(esp_init_data.decode("utf-8"))
         esp_id = jsonData['esp_id']
         esp_ip = jsonData['esp_ip']
         esp_type = jsonData['esp_type']
@@ -66,10 +59,10 @@ class Data_service:
         for esp_volume in active_esps_volumes:
             if (esp_volume.get_volume == active_esp_with_max_volume.get_volume):
                 #TODO: client: send http request to esp with info: I don't want your data
-                None
+                pass
             else:
                 #TODO: client: send http request to esp with info: I DO want your data
-                None
+                pass
 
     def process_volume(self, data):
 

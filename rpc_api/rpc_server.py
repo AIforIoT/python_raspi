@@ -1,6 +1,6 @@
 from rpc_api import handler
 from app.database.db_service import DBService
-from app.models.data_request_object import ConfigParams, FrameData, DEFAULT_TYPES
+from app.models.data_request_object import FrameData, DEFAULT_TYPES
 from flask_xmlrpcre.xmlrepcre import Fault
 
 import numpy as np

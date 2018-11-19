@@ -2,12 +2,14 @@
 from flask import Blueprint, request
 import numpy as np
 from app.models.data_request_object import FrameData
+from app.processor.process_info import Info_processor
 import xmlrpc.client
 import json
-from gpiozero import LED
+#from gpiozero import LED
 
 bp = Blueprint('data_controller', __name__)
 
+info_processor = Info_processor()
 BUFFER_MAX_SIZE = 16000  # Size of the buffer (To be changed)
 BUFFER_CMD_MAX_SIZE = 64000  # Size of the buffer that will save the whole audio. (To be changed)
 
@@ -18,8 +20,8 @@ commandsBufferDict = dict()
 commandsPositionDict = dict()
 
 keyword_found = False
-green = LED(4)
-red = LED(3)
+#green = LED(4)
+#red = LED(3)
 
 
 @bp.route('/audio', methods=['POST'])
@@ -31,8 +33,10 @@ def get_audio():
     """
     global keyword_found
 
+    print(request.data)
+
     rdata = json.loads(request.data)
-    ide = rdata['ide']
+    ide = 0 #rdata['ide']
     data = rdata['data']
 
     if ide not in buffersDict:
@@ -55,9 +59,13 @@ def get_audio():
                 client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
                 keyword_found = client.send_data_request_object(to_send)
 
-                if keyword_found:
-                    green.on()
+                #TODO: parse keyword_found and check the STATUS field. OPTIONS:
+                    # SHOULD BE: KEYWORD_YES, KEYWORD_NO, VALUABLE_DATA_YES VALUABLE_DATA_NO -> to define!
+                # if valuable data: info_processor.process_AI_data(data)
 
+                if keyword_found:
+                    #green.on()
+                    pass
                 # Truncate
                 buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                 positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
@@ -131,5 +139,5 @@ def end_sending():
     commandsPositionDict[ide] = 0
     positionsDict[ide] = 0
 
-    green.off()
+    #green.off()
     return "200", "OK"
