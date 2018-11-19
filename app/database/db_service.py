@@ -72,6 +72,10 @@ class DBService:
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
         return None
 
+    def get_volume_data_by_timestamp_and_volume_is_different(self, timestamp, volume):
+        #todo: Return a list volume_data objects with 'timestamp' and volume property is different than 'volume'.
+        return None
+
     def get_all_volumes_by_timestamp(self, timestamp):
         #todo: Return the volume_data object with 'timestamp'
         return None

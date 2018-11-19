@@ -2,15 +2,17 @@ import json, time
 from app.models.ESP_data import ESP_data
 from app.models.volume_data import Volume_data
 from app.database.db_service import DBService
+from app.http_client.http_client_service import Http_service
 import numpy as np
 from threading import Timer
 
 REQUEST_DATA_TIME=10.0
 db_service = DBService()
+http_client = Http_service()
 
 class Data_service:
 
-    #Parses the received 'impulse_data' into a FrameData object and send a db request to store it.
+    #NOT USED: Parses the received 'impulse_data' into a FrameData object and send a db request to store it.
     def process_data(self, impulse_data):
 
         jsonData = json.loads(impulse_data)
@@ -52,17 +54,14 @@ class Data_service:
 
     def request_data_to_esp(self, timestamp):
 
+        #TODO: change: active_esp_with_max_volume.get_volume and active_esp_with_max_volume.get_esp_id by real get methods
+
         active_esp_with_max_volume = db_service.get_volume_data_by_timestamp_and_volume_is_max(timestamp)
-        active_esps_volumes = db_service.get_all_volumes_by_timestamp(timestamp)
+        active_esp_volumes_low_pw = db_service.get_volume_data_by_timestamp_and_volume_is_different(timestamp, active_esp_with_max_volume.get_volume)
 
+        http_client.reject_esp_data(active_esp_volumes_low_pw)
+        http_client.request_esp_data(active_esp_with_max_volume.get_esp_id)
 
-        for esp_volume in active_esps_volumes:
-            if (esp_volume.get_volume == active_esp_with_max_volume.get_volume):
-                #TODO: client: send http request to esp with info: I don't want your data
-                pass
-            else:
-                #TODO: client: send http request to esp with info: I DO want your data
-                pass
 
     def process_volume(self, data):
 
@@ -72,10 +71,6 @@ class Data_service:
         delay = jsonData['delay']
         volume = jsonData['volume']
 
-        #Save volume in db
-        volume_data = Volume_data(esp_id, timestamp, delay, volume)
-        db_service.save_volume_data(volume_data)
-
         #If it is the first volume received for 'timestamp', start timer
         if db_service.get_all_volumes_by_timestamp(timestamp) is None:
             #Delete previous db entries for past timestamps:
@@ -84,11 +79,8 @@ class Data_service:
             #Timer executes func  after 30ms
             t = Timer(REQUEST_DATA_TIME, self.request_data_to_esp, args=timestamp)
             t.start()
-            print("vaig fent coses mentre m'espero a q salti el timer!")
 
-        #TODO: check if there is the first timestamp for esp_id stored
-            #If so:  wake up cron after 30ms
-
-        #Store data in db
-
+        #Save volume in db
+        volume_data = Volume_data(esp_id, timestamp, delay, volume)
+        db_service.save_volume_data(volume_data)
 
