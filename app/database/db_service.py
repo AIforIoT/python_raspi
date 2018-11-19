@@ -35,13 +35,13 @@ class DBService:
     def register_esp(self, esp_to_register):
 
         #Map ESP_data object into ESPdata entity
-        esp_id = esp_to_register['_ESP_data__esp_id']
-        esp_ip = esp_to_register['_ESP_data__esp_ip']
-        x = esp_to_register['_ESP_data__x']
-        y = esp_to_register['_ESP_data__y']
-        esp_type = esp_to_register['_ESP_data__type']
-        side = esp_to_register['_ESP_data__side']
-        location = esp_to_register['_ESP_data__location']
+        esp_id = esp_to_register.esp_id
+        esp_ip = esp_to_register.esp_ip
+        x = esp_to_register.x
+        y = esp_to_register.y
+        esp_type = esp_to_register.type
+        side = esp_to_register.side
+        location = esp_to_register.location
 
         #Create ESPdata db entity
         sqlESPdata = ESPdata(esp_id, esp_ip, x, y, esp_type, side, location)
@@ -51,9 +51,10 @@ class DBService:
     #Print in terminal all registered esp_id's
     def print_all_registered_esp_id(self):
         results = ESPdata.query.all()
-        for esp in results:
-            esp = esp.__dict__
-            print(esp['__ESP_data__esp_id'])
+        return results
+        #for esp in results:
+            #esp = esp.__dict__
+            #print(esp['__ESP_data__esp_id'])
 
     def get_all_esps(self):
         #TODO: MIREU QUE AIXO SIGUI CORRECTE I BORREU EL WARNING XD!!!!!!!!!!!!!!!!!

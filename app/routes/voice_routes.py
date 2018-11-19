@@ -1,10 +1,13 @@
 from flask import (Blueprint, request)
 import xmlrpc.client
 from app.data_service.data_service import Data_service
+from app.database.db_service import DBService
+import json
 
 bp = Blueprint('voice_routes', __name__)
 
 data_service = Data_service()
+db_service = DBService()
 
 timeout = None
 
@@ -31,4 +34,7 @@ def get_volume():
     data_service.process_volume(request.data)
     return 'OK', 200
 
+@bp.route('/esps', methods=['GET'])
+def get_esps():
+    return str(db_service.print_all_registered_esp_id()[0]), 200
 
