@@ -7,8 +7,8 @@ http_service = Http_service()
 class Info_processor:
 
     # This method takes the decision of which esp/s have to perform an action, and uses the http_client_service to inform
-    # which requests should be done. This method is also in charge to inform all the leftover esps in registered that
-    #
+    # which requests should be done. Once the action has been performed, this method is also in charge of reporting to all
+    # the leftover esps registered that its states must change to 'send volume'.
     def process_AI_data(self, AI_data):
 
         #TODO:
