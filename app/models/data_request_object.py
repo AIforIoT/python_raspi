@@ -16,11 +16,13 @@ class FrameData:
     __numpy_data = object
     __esp_id = object
     __offset = object
+    __data_type = object
 
-    def __init__(self, numpy_data, esp_id, offset):
+    def __init__(self, numpy_data, esp_id, offset, data_type='0'):
         self.numpy_data = numpy_data
         self.esp_id = esp_id
         self.offset = offset
+        self.data_type = data_type
 
     @property
     def numpy_data(self):
@@ -45,3 +47,11 @@ class FrameData:
     @offset.setter
     def offset(self, val):
         self.__offset = val
+        
+    @property
+    def data_type(self):
+        return self.__data_type
+
+    @data_type.setter
+    def data_type(self, val):
+        self.__data_type = val

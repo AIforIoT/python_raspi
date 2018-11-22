@@ -36,8 +36,9 @@ def get_audio():
     print(request.data)
 
     rdata = json.loads(request.data)
-    ide = 0 #rdata['ide']
+    ide = rdata['ide']
     data = rdata['data']
+    eof = rdata['eof']
 
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
@@ -90,19 +91,24 @@ def get_audio():
                 print("BUG! Buffer is full! Exiting 'for' statement to not crash")
                 break
 
-    print(positionsDict[ide])
-    print(buffersDict[ide])
-    return "200"
+    if eof and commandsPositionDict[ide] is not 0:
+        print("End sending cmd")
 
+        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
+        client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+        client.send_data_request_object(to_send)
+        keyword_found = False
+        commandsPositionDict[ide] = 0
+        positionsDict[ide] = 0
 
+        #green.off()
+        
+    return "200", "OK"
+
+"""
 @bp.route('/audio/end', methods=['POST'])
 def end_sending():
-    """
-    The tx was ended, its time to speech recognition!
-    For esp32 speech buffer calculate the one with more power and send it to the speech recognition engine.
 
-    :return: 200 OK ot 500 Error
-    """
     global keyword_found, green
 
     rdata = json.loads(request.data)
@@ -141,3 +147,4 @@ def end_sending():
 
     #green.off()
     return "200", "OK"
+"""
