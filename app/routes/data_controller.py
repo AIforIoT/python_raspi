@@ -96,7 +96,7 @@ def get_audio():
         to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
         client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
         response = client.send_data_request_object(to_send)
-        
+        info_processor.process_AI_data(response)
         
         keyword_found = False
         commandsPositionDict[ide] = 0
