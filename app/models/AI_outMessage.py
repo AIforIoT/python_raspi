@@ -1,7 +1,7 @@
 
 class outputMessage:
 
-    def init(self,iouti,status,location,typeObj):
+    def __init__(self,iouti,status,location,typeObj):
         self.iouti = iouti
         self.status = status
         self.location = location

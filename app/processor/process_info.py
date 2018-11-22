@@ -13,22 +13,20 @@ class Info_processor:
     # which requests should be done. Once the action has been performed, this method is also in charge of reporting to all
     # the leftover esps registered that its states must change to 'send volume'.
     def process_AI_data(self, AI_data):
-        print("HOLA1")
+
         #AI_data object get type (ei: light, blind, other): esp_type
         typeObj = AI_data.typeObj
         #AI_data -> get action: High or Low -> High=1, Low=0
         action = AI_data.status
         #AI_data -> is location required?
         location_required = AI_data.location
-        print("HOLA2")
 
         if location_required == True:
-            print("HOLA3")
             #GET ESP the most recent 'timestamp' from volumes
             timestamp = db_service.get_last_timestamp()
 
             # Get x,y coordenates from speaker
-            #TODO: UNCOMMENT TO USE REAL LOCATION #x, y = localization.METHOD_TO_IMPLEMENT(timestamp)
+            x, y = localization.get_x_y() #TODO: GET PARAMS!!!
             x, y = 1, 2
             esp_id = self.get_closest_esp_by_type(x, y, typeObj)
 
@@ -36,7 +34,7 @@ class Info_processor:
             leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
             http_service.request_esp_volumes(leftover_esp_list)
 
-        else: #location_required == FaLse
+        else: #location_required == False
 
             esps_with_requested_type = db_service.get_esp_by_type(typeObj)
             http_service.send_http_action(esps_with_requested_type, action)

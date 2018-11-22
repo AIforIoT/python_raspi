@@ -32,3 +32,7 @@ class Localization:
     def solve(self):
         print(self.P.solve())
         return self.target.loc, self.label_target
+
+
+    def get_x_y(self, array_delays, array_x_y):
+        pass
