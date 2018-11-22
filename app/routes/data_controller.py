@@ -36,7 +36,7 @@ def get_audio():
     print(request.data)
 
     rdata = json.loads(request.data.decode('utf-8'))
-    ide = 0#ide = rdata['ide']
+    ide = request.remote_addr.to_string()
     data = rdata['data']
     eof = rdata['EOF']
     loca = rdata['location']
@@ -57,12 +57,10 @@ def get_audio():
                     # KeyWord Spotting
                     to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
                     client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                    keyword_found = client.send_data_request_object(to_send)
+                    response = client.send_data_request_object(to_send)
 
-                    #TODO: parse keyword_found and check the STATUS field. OPTIONS:
-                        # SHOULD BE: KEYWORD_YES, KEYWORD_NO, VALUABLE_DATA_YES VALUABLE_DATA_NO -> to define!
-                    # if valuable data: info_processor.process_AI_data(data)
-
+                    keyword_found = response.iouti
+                    
                     if keyword_found:
                         #green.on()
                         pass
@@ -97,7 +95,9 @@ def get_audio():
 
         to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
         client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-        client.send_data_request_object(to_send)
+        response = client.send_data_request_object(to_send)
+        
+        
         keyword_found = False
         commandsPositionDict[ide] = 0
         positionsDict[ide] = 0
