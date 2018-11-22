@@ -1,7 +1,10 @@
 from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
+from app.localization.localization import Localization
+import logging
 
 db_service = DBService()
+localization = Localization()
 http_service = Http_service()
 
 class Info_processor:
@@ -11,35 +14,40 @@ class Info_processor:
     # the leftover esps registered that its states must change to 'send volume'.
     def process_AI_data(self, AI_data):
 
-        #TODO:
-            #AI_data object get type (ei: light, blind, other): esp_type
-            #AI_data -> is location required?
-            #AI_data -> get action: High or Low -> Ara està com High=1, Low=0, es pot canviar!
-                #Yes:
-                    #GET ESP 'timestamp' from the AI_data object
-                    #GET ESP 'esp_type' from the AI_data object
-                    #x, y = localization.metode_que_no_se_quin_es_hehe(timestamp) -> aixo torna les coordenades x,y de la persona q esta parlant todo: Canviar a metode real
-                    #esp_id =self.get_closest_esp_by_type(x, y, esp_type)
+        #AI_data object get type (ei: light, blind, other): esp_type
+        typeObj = AI_data.typeObj
+        #AI_data -> get action: High or Low -> High=1, Low=0
+        action = AI_data.status
+        #AI_data -> is location required?
+        location_required = AI_data.location
 
-                    #http_service.send_http_action_to_esp_id(esp_id, action)
-                    #leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
-                    #http_service.request_esp_volumes(leftover_esp_list)
+        if location_required == True:
+            #GET ESP the most recent 'timestamp' from volumes
+            timestamp = db_service.get_last_timestamp()
 
-                #No:
-                    #AI_data get action (ei: ON/OFF)
-                    #esps_with_requested_type = db_service.get_esp_by_type(esp_type)
-                        #http_service.send_http_action(esps_with_requested_type, action)
+            # Get x,y coordenates from speaker
+            x, y = localization.METHOD_TO_IMPLEMENT(timestamp)
+            esp_id = self.get_closest_esp_by_type(x, y, typeObj)
 
-                    #esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(esp_type)
-                        #http_service.request_esp_volumes(esps_with_type_dif_from_requested)
+            http_service.send_http_action_to_esp_id(esp_id, action)
+            leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
+            http_service.request_esp_volumes(leftover_esp_list)
+
+        else: #location_required == FaLse
+
+            esps_with_requested_type = db_service.get_esp_by_type(typeObj)
+            http_service.send_http_action(esps_with_requested_type, action)
+
+            esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(typeObj)
+            http_service.request_esp_volumes(esps_with_type_dif_from_requested)
+
 
         #When a decision has been taken: delete all volume entries in the db.
-        #db_service.delete_all_volumes()
+        db_service.delete_all_volumes()
 
-        return 1
 
     #This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
     def get_closest_esp_by_type(self, x, y, esp_type):
         #TODO
         #return esp_id_of_closest_esp_with_esp_type
-        pass
+        return "192.168.1.13"
