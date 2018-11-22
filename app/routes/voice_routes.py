@@ -37,7 +37,7 @@ def get_volume():
 
 
 @bp.route('/error', methods=['POST'])
-def get_volume():
+def get_volume_err():
     logging.error("ESP ERROR: "+ str(request.data))
     return 'OK', 200
 
