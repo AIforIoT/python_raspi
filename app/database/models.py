@@ -54,7 +54,7 @@ class ESPdata(Base):
     def __repr__(self):
         return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location, self.delay, self.timestamp)
     
-class VOLUMEFrame(Base):
+class VOLUMEdata(Base):
     __tablename__='volume_data'
     id        = Column(Integer, primary_key=True)
     esp_id    = Column(String(50), unique=True)

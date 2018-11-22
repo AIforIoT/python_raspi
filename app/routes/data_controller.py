@@ -35,10 +35,11 @@ def get_audio():
 
     print(request.data)
 
-    rdata = json.loads(request.data)
-    ide = rdata['ide']
+    rdata = json.loads(request.data.decode('utf-8'))
+    ide = 0#ide = rdata['ide']
     data = rdata['data']
-    eof = rdata['eof']
+    eof = rdata['EOF']
+    loca = rdata['location']
 
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
@@ -50,27 +51,27 @@ def get_audio():
             byte = 0
             try:
                 byte = int(d)
+                buffersDict[ide][int(positionsDict[ide])] = byte
+                positionsDict[ide] += 1
+                if positionsDict[ide] >= BUFFER_MAX_SIZE:
+                    # KeyWord Spotting
+                    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
+                    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+                    keyword_found = client.send_data_request_object(to_send)
+
+                    #TODO: parse keyword_found and check the STATUS field. OPTIONS:
+                        # SHOULD BE: KEYWORD_YES, KEYWORD_NO, VALUABLE_DATA_YES VALUABLE_DATA_NO -> to define!
+                    # if valuable data: info_processor.process_AI_data(data)
+
+                    if keyword_found:
+                        #green.on()
+                        pass
+                    # Truncate
+                    buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
+                    positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
             except:
                 print("Error.... byte not int")
-            buffersDict[ide][int(positionsDict[ide])] = byte
-            positionsDict[ide] += 1
-            if positionsDict[ide] >= BUFFER_MAX_SIZE:
-                # KeyWord Spotting
-                to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
-                client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                keyword_found = client.send_data_request_object(to_send)
-
-                #TODO: parse keyword_found and check the STATUS field. OPTIONS:
-                    # SHOULD BE: KEYWORD_YES, KEYWORD_NO, VALUABLE_DATA_YES VALUABLE_DATA_NO -> to define!
-                # if valuable data: info_processor.process_AI_data(data)
-
-                if keyword_found:
-                    #green.on()
-                    pass
-                # Truncate
-                buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
-                positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-
+               
     else:
         if ide not in commandsBufferDict:
             commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
@@ -91,7 +92,7 @@ def get_audio():
                 print("BUG! Buffer is full! Exiting 'for' statement to not crash")
                 break
 
-    if eof and commandsPositionDict[ide] is not 0:
+    if not eof and not commandsPositionDict[ide]:
         print("End sending cmd")
 
         to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
