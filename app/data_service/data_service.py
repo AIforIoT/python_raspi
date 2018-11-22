@@ -12,30 +12,6 @@ http_client = Http_service()
 
 class Data_service:
 
-    #NOT USED: Parses the received 'impulse_data' into a FrameData object and send a db request to store it.
-    def process_data(self, impulse_data):
-
-        jsonData = json.loads(impulse_data)
-        esp_id = jsonData['esp_id']
-        timestamp = jsonData['timestamp']
-        delay = jsonData['delay']
-        power = jsonData['power']
-        offset = jsonData['offset']
-        data_type = 0
-
-        #Dummy numpy object. TODO: Replace by real object with voice data
-        numpy_data = np.empty([131295], dtype=int)
-        numpy_data = np.array2string(numpy_data)
-
-
-    def process_data_request(self, data):
-
-        #TODO: data_type = 0:
-
-        #TODO: data_type = 1:
-        return None
-
-
 
     def save_esp_setup_data(self, esp_init_data):
      
