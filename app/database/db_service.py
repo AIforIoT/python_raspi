@@ -1,5 +1,6 @@
 from app.database.database import db_session
-from app.database.models import SQLFrame, ESPdata
+from app.database.models import SQLFrame, ESPdata, VOLUMEdata
+from sqlalchemy import desc
 
 class DBService:
 
@@ -62,32 +63,36 @@ class DBService:
 
     def save_volume_data(self, volume_data):
         #todo: save volume_data
+        sqlVOLUMEdata = VOLUMEdata(volume_data.esp_id, volume_data.timestamp, volume_data.delay, volume_data.volume)
+        db_session.add(sqlVOLUMEdata)
+        db_session.commit()
         pass
 
     def delete_all_volumes(self):
-        #todo: delete all volume_data entities stored in the db
-        pass
+        #todo: delete all volume_data entities stored in the
+        VOLUMEdata.query.all().delete()
 
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
-        return None
-
-    def get_volume_data_by_timestamp_and_volume_is_different(self, timestamp, volume):
-        #todo: Return a list volume_data objects with 'timestamp' and volume property is different than 'volume'.
-        return None
+        volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp).order_by(desc(volume)).first()
+        return volume_data
 
     def get_all_volumes_by_timestamp(self, timestamp):
         #todo: Return the volume_data object with 'timestamp'
-        return None
+        volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp)
+        return volume_data
 
     def get_esp_by_type(self, type):
         #todo: from the registered esps, return a list with the ones with 'type'
-        return None
+        esps = ESPdata.query.filter_by(type=type)
+        return esps
 
     def get_esp_with_type_different(self, type):
         #todo: return a list of esps with type field different from 'type'
-        return None
+        esps = ESPdata.query.filter_by(timestamp != timestamp)
+        return esps
 
     def get_esp_with_esp_id_different_from(self, esp_id):
         #todo: return a list with all esp registered that esp_id field is different from 'esp_id'
+        esps = ESPdata.query.filter_by(esp_id != esp_id)
         return None
