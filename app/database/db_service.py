@@ -1,6 +1,6 @@
 from app.database.database import db_session
 from app.database.models import SQLFrame, ESPdata, VOLUMEdata
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 
 class DBService:
 
@@ -81,6 +81,10 @@ class DBService:
         #todo: Return the volume_data object with 'timestamp'
         volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp)
         return volume_data
+    
+    def get_last_timestamp(self):
+        volume_data = VOLUMEdata.query.order_by(asc(timestamp)).first()
+        return volume_data.timestamp
 
     def get_esp_by_type(self, type):
         #todo: from the registered esps, return a list with the ones with 'type'
