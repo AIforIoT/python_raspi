@@ -36,7 +36,7 @@ class Info_processor:
         #When a decision has been taken: delete all volume entries in the db.
         #db_service.delete_all_volumes()
 
-        pass
+        return 1
 
     #This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
     def get_closest_esp_by_type(self, x, y, esp_type):
