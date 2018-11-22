@@ -68,5 +68,5 @@ class VOLUMEFrame(Base):
         self.__delay     = delay
         self.__timestamp = timestamp
     
-    def __repr__(self)
+    def __repr__(self):
         return Volume_data(self.esp_id, self.timestamp, self.delay, self.volume)

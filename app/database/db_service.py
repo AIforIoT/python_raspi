@@ -1,5 +1,5 @@
 from app.database.database import db_session
-from app.database.models import SQLFrame, ESPdata
+from app.database.models import SQLFrame, ESPdata, VOLUMEdata
 from sqlalchemy import desc
 
 class DBService:
@@ -69,8 +69,8 @@ class DBService:
         pass
 
     def delete_all_volumes(self):
-        #todo: delete all volume_data entities stored in the db
-        pass
+        #todo: delete all volume_data entities stored in the
+        VOLUMEdata.query.all().delete()
 
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
@@ -79,7 +79,7 @@ class DBService:
 
     def get_all_volumes_by_timestamp(self, timestamp):
         #todo: Return the volume_data object with 'timestamp'
-        volume_data = VOLUMPEdata.query.filter_by(timestamp=timestamp)
+        volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp)
         return volume_data
 
     def get_esp_by_type(self, type):
@@ -89,9 +89,10 @@ class DBService:
 
     def get_esp_with_type_different(self, type):
         #todo: return a list of esps with type field different from 'type'
-        esps = ESPdata.query.filter(timestamp != timestamp)
+        esps = ESPdata.query.filter_by(timestamp != timestamp)
         return esps
 
     def get_esp_with_esp_id_different_from(self, esp_id):
         #todo: return a list with all esp registered that esp_id field is different from 'esp_id'
+        esps = ESPdata.query.filter_by(esp_id != esp_id)
         return None
