@@ -6,7 +6,7 @@ from flask_xmlrpcre.xmlrepcre import Fault
 
 #Artificial Intelligence imports
 from local_keyword_detection import detect_keyword as dk
-from artificial_inteligence import detect_command as dc
+from artificial_intelligence import detect_command as dc
 
 from scipy.io.wavfile import write
 
