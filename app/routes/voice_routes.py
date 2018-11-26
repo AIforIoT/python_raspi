@@ -45,5 +45,9 @@ def get_volume_err():
 
 @bp.route('/esps', methods=['GET'])
 def get_esps():
-    return str(db_service.print_all_registered_esp_id()[0]), 200
+    esps = db_service.print_all_registered_esp_id()
+    if not esps:
+        return str(esps), 200
+    else:
+        return "", 404
 

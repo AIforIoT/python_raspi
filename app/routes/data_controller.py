@@ -36,7 +36,7 @@ def get_audio():
     print(request.data)
 
     rdata = json.loads(request.data.decode('utf-8'))
-    ide = request.remote_addr.to_string()
+    ide = request.remote_addr
     data = rdata['data']
     eof = rdata['EOF']
     loca = rdata['location']
@@ -93,7 +93,7 @@ def get_audio():
     if not eof and not commandsPositionDict[ide]:
         print("End sending cmd")
 
-        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
+        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
         client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
         response = client.send_data_request_object(to_send)
         
