@@ -8,7 +8,9 @@ from flask_xmlrpcre.xmlrepcre import Fault
 from local_keyword_detection import detect_keyword as dk
 from artificial_intelligence import detect_command as dc
 
-from scipy.io.wavfile import write
+#from scipy.io.wavfile import write
+#from wavio import write
+import wave
 
 import numpy as np
 import json
@@ -37,7 +39,8 @@ def send_data_request_object(data_request_object):
         config_params.append(data_request_object['_FrameData__iouti'])
 
         numpy_data = data_request_object['_FrameData__numpy_data']
-        numpy_data = np.array(numpy_data)
+        print(type(numpy_data))
+        #numpy_data = np.array(numpy_data)
 
         """
 
@@ -60,20 +63,27 @@ def send_data_request_object(data_request_object):
             else:
                 index += 1
 
+        """
+        print(numpy_data)
         #Generate the wav file with the appropiate index
-        file_name = "audio_" + index + ".wav"
+        #file_name = "audio_" + index + ".wav"
         rate = 16000
-        write(file_name, rate, numpy_data)
+        #genFile(rate, 8, 1, numpy_data)
+        wav = wave.open("audio5.wav", "wb")
+        wav.writeframes(numpy_data)
+        #write("audio4.wav",rate, numpy_data)
+        wav.close()
 
         #Move wav file to folder where they are stored
-        os.rename("./" + file_name, "./audioRaspi/" + file_name)
+        #os.rename("./" + file_name, "./audioRaspi/" + file_name)
 
-        """
+        
 
-        file_names_list = glob.glob(os.path.join("local_keyword_detection/audio", '*.wav'))
-
+        #file_names_list = glob.glob(os.path.join("local_keyword_detection/audio", '*.wav'))
+        print(config_params[2])
         #Calls to Artificial Intelligence block and create object to return
-        if(config_params[2] == 1):
+        if(config_params[2] == 0):
+            print("waiting iouti")
             iouti_boolean = dk.detect('biel_achant.wav')
             print(iouti_boolean)
             outputM = outputMessage(iouti_boolean,"","","")

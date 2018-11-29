@@ -33,10 +33,10 @@ def get_audio():
     """
     global keyword_found
 
-    print(request.data)
+    #print(request.data)
 
     rdata = json.loads(request.data.decode('utf-8'))
-    ide = request.remote_addr
+    ide = request.remote_addr.split('.')[3]
     data = rdata['data']
     eof = rdata['EOF']
     loca = rdata['location']
@@ -53,22 +53,29 @@ def get_audio():
                 byte = int(d)
                 buffersDict[ide][int(positionsDict[ide])] = byte
                 positionsDict[ide] += 1
-                if positionsDict[ide] >= BUFFER_MAX_SIZE:
+                #print(buffersDict[ide][int(positionsDict[ide])])
+                #print(positionsDict[ide] >= BUFFER_MAX_SIZE)
+                #print("POS: {}".format(positionsDict[ide]))
+                #print("BUF: {}".format(BUFFER_MAX_SIZE))
+                if positionsDict[ide] >= BUFFER_MAX_SIZE - 1:
                     # KeyWord Spotting
-                    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
+                    print("Going to send")
+                    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]), 0)
                     client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
                     response = client.send_data_request_object(to_send)
-
-                    keyword_found = response.iouti
-                    
-                    if keyword_found:
+                    #print(response)
+                    keyword_found = response['_outputMessage__iouti']
+                    #print(keyword_found)
+                    if keyword_found is "True":
                         #green.on()
                         pass
                     # Truncate
                     buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                     positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-            except:
-                print("Error.... byte not int")
+                    #print(positionsDict[ide])
+            except Exception as e:
+                #print(e)
+                pass
                
     else:
         if ide not in commandsBufferDict:
@@ -90,7 +97,7 @@ def get_audio():
                 print("BUG! Buffer is full! Exiting 'for' statement to not crash")
                 break
 
-    if not eof and not commandsPositionDict[ide]:
+    if eof and ide in commandsPositionDict:
         print("End sending cmd")
 
         to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
@@ -104,7 +111,7 @@ def get_audio():
 
         #green.off()
         
-    return "200", "OK"
+    return "200, OK"
 
 """
 @bp.route('/audio/end', methods=['POST'])
