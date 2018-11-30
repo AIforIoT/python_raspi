@@ -41,77 +41,81 @@ def get_audio():
     eof = rdata['EOF']
     loca = rdata['location']
 
-    if ide not in buffersDict:
-        buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
-        positionsDict[ide] = 0
-
-    if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
+    for d in data:
         # data = request.data.split(b',')
-        for d in data:
-            byte = 0
-            try:
-                byte = int(d)
-                buffersDict[ide][int(positionsDict[ide])] = byte
-                positionsDict[ide] += 1
-                #print(buffersDict[ide][int(positionsDict[ide])])
-                #print(positionsDict[ide] >= BUFFER_MAX_SIZE)
-                #print("POS: {}".format(positionsDict[ide]))
-                #print("BUF: {}".format(BUFFER_MAX_SIZE))
-                if positionsDict[ide] >= BUFFER_MAX_SIZE - 1:
+
+        byte = 0
+        try:
+            byte = int(d)
+            if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
+                fill_keyword_buffer(ide, byte)
+                if positionsDict[ide] == BUFFER_MAX_SIZE - 1:
                     # KeyWord Spotting
-                    print("Going to send")
-                    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]), 0)
-                    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                    response = client.send_data_request_object(to_send)
-                    #print(response)
+                    response = send_possible_keyword(ide)
                     keyword_found = response['_outputMessage__iouti']
-                    #print(keyword_found)
                     if keyword_found is "True":
                         #green.on()
                         pass
                     # Truncate
                     buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                     positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-                    #print(positionsDict[ide])
-            except Exception as e:
-                #print(e)
-                pass
-               
-    else:
-        if ide not in commandsBufferDict:
-            commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
-            commandsPositionDict[ide] = 0
+            else:
+                fill_command_buffer(ide, byte)
+                if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE - 1:  # The buffer can overflow here!!
+                    print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+                    break
 
-        # data = request.data.split(b',')
-        for d in data:
-            byte = 0
-            try:
-                byte = int(d)
-            except ValueError:
-                print("Error.... byte not int")
-            
-            commandsBufferDict[ide][int(commandsPositionDict[ide])] = byte
-            commandsPositionDict[ide] += 1
-            
-            if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE:  # The buffer can overflow here!!
-                print("BUG! Buffer is full! Exiting 'for' statement to not crash")
-                break
+        except Exception as e:
+            print(e)
+            pass
 
     if eof and ide in commandsPositionDict:
         print("End sending cmd")
 
-        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
-        client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-        response = client.send_data_request_object(to_send)
-        info_processor.process_AI_data(response)
+        info_processor.process_AI_data(send_possible_command(ide))
         
         keyword_found = False
-        commandsPositionDict[ide] = 0
-        positionsDict[ide] = 0
-
+        reset_buffers(ide)
         #green.off()
         
     return "200, OK"
+
+
+def fill_keyword_buffer(ide, data):
+    if ide not in buffersDict:
+        buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
+        positionsDict[ide] = 0
+
+    buffersDict[ide][int(positionsDict[ide])] = data
+    positionsDict[ide] += 1
+
+
+def fill_command_buffer(ide, data):
+    if ide not in commandsBufferDict:
+        commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
+        commandsPositionDict[ide] = 0
+
+    commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
+    commandsPositionDict[ide] += 1
+
+
+def send_possible_keyword(ide):
+    print("Going to send")
+    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]), 0)
+    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+    return client.send_data_request_object(to_send)
+
+
+def send_possible_command(ide):
+    to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]), '1')
+    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+    return client.send_data_request_object(to_send)
+
+
+def reset_buffers(ide):
+    commandsPositionDict[ide] = 0
+    positionsDict[ide] = 0
+
 
 """
 @bp.route('/audio/end', methods=['POST'])
