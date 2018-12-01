@@ -1,10 +1,10 @@
 from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
-from app.localization.localization import Localization
+#from app.localization.localization import Localization
 import logging
 
 db_service = DBService()
-localization = Localization()
+#localization = Localization()
 http_service = Http_service()
 
 class Info_processor:
@@ -26,7 +26,7 @@ class Info_processor:
             timestamp = db_service.get_last_timestamp()
 
             # Get x,y coordenates from speaker
-            x, y = localization.get_x_y() #TODO: GET PARAMS!!!
+            #x, y = localization.get_x_y() #TODO: GET PARAMS!!!
             x, y = 1, 2
             esp_id = self.get_closest_esp_by_type(x, y, typeObj)
 

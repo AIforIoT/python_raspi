@@ -2,7 +2,7 @@ from flask import (Blueprint, request)
 import xmlrpc.client
 from app.data_service.data_service import Data_service
 from app.database.db_service import DBService
-import logging
+import logging, json
 
 
 bp = Blueprint('voice_routes', __name__)
@@ -40,14 +40,4 @@ def get_volume():
 def get_volume_err():
     logging.error("ESP ERROR: "+ str(request.data))
     return 'OK', 200
-
-
-
-@bp.route('/esps', methods=['GET'])
-def get_esps():
-    esps = db_service.print_all_registered_esp_id()
-    if not esps:
-        return str(esps), 200
-    else:
-        return "", 404
 

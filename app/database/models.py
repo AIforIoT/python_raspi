@@ -32,41 +32,37 @@ class ESPdata(Base):
     id = Column(Integer, primary_key=True)
     esp_id = Column(String(50), unique=True)
     esp_ip = Column(String(50), unique=True)
-    x = Column(String(50))
-    y = Column(String(50))
-    type = Column(String(50))
-    side = Column(String(50))
-    location = Column(String(50))
-    delay = Column(String(50))
-    timestamp = Column(String(50))
+    x = Column(String(50), nullable=False)
+    y = Column(String(50), nullable=False)
+    type = Column(String(50), nullable=False)
+    side = Column(String(50), nullable=False)
+    location = Column(String(50), nullable=False)
 
-    def __init__(self, esp_id=None, esp_ip=None, x=None, y=None, type=None, side=None, location=None, delay=0, timestamp=0):
+    def __init__(self, esp_id=None, esp_ip=None, x=None, y=None, type=None, side=None, location=None):
         self.esp_id = esp_id
         self.esp_ip = esp_ip
-        self.__x = x
-        self.__y = y
-        self.__type = type
-        self.__side = side
-        self.__location = location
-        self.__delay = delay
-        self.__timestamp = timestamp
+        self.x = x
+        self.y = y
+        self.type = type
+        self.side = side
+        self.location = location
 
     def __repr__(self):
-        return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location, self.delay, self.timestamp)
+        return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location)
     
 class VOLUMEdata(Base):
     __tablename__='volume_data'
-    id        = Column(Integer, primary_key=True)
-    esp_id    = Column(String(50), unique=True)
+    id = Column(Integer, primary_key=True)
+    esp_id = Column(String(50), unique=True)
     timestamp = Column(String(50))
-    delay     = Column(String(50))
-    volume    = Column(String(50))
+    delay = Column(String(50))
+    volume = Column(String(50))
     
     def __init__(self, esp_id=None, timestamp=0, delay=0, volume=0):
-        self.__esp_id    = esp_id
-        self.__volume    = volume
-        self.__delay     = delay
-        self.__timestamp = timestamp
+        self.esp_id = esp_id
+        self.volume = volume
+        self.delay = delay
+        self.timestamp = timestamp
     
     def __repr__(self):
         return Volume_data(self.esp_id, self.timestamp, self.delay, self.volume)

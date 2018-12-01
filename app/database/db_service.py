@@ -1,38 +1,13 @@
 from app.database.database import db_session
 from app.database.models import SQLFrame, ESPdata, VOLUMEdata
 from sqlalchemy import desc, asc
+from app.data_service.mapper import Mapper
+
+mapper = Mapper()
 
 class DBService:
 
-    #This method is a test that gets all SQLFrame entities stored in the db and print its numpy_data object.
-    def print_all_registered_SQLFrame(self):
-        results = SQLFrame.query.all()
-        for frame in results:
-            frame = frame.__dict__
-            numpy_data = frame['_FrameData__numpy_data']
-            print(numpy_data)
-
-    #Get in the 'esp_data' table the ESPdata object with 'esp_id', and return its coordenates (x, y)
-    def get_coordenates_by_esp_id(self, esp_id):
-
-        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
-        if esp_data is None:
-            return None
-        x = esp_data.x
-        y = esp_data.y
-        return x, y
-
-
-    #Get in the 'frame_data' table the SQLFrame with 'esp_id' and return its 'delay' field
-    def get_delay_by_esp_id(self, esp_id):
-
-        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
-        if esp_data is None:
-            return None
-        delay = esp_data.delay
-        return delay
-
-    #Register a new esp into de esp_data db table.
+    #Register a new esp into de esp_data db table. #####
     def register_esp(self, esp_to_register):
 
         #Map ESP_data object into ESPdata entity
@@ -49,28 +24,77 @@ class DBService:
         db_session.add(sqlESPdata)
         db_session.commit()
 
-    #Print in terminal all registered esp_id's
-    def print_all_registered_esp_id(self):
-        results = ESPdata.query.all()
-        return results
-        #for esp in results:
-            #esp = esp.__dict__
-            #print(esp['__ESP_data__esp_id'])
-
+    #Return a list with all registered ESPs #####
     def get_all_esps(self):
-        #TODO: MIREU QUE AIXO SIGUI CORRECTE I BORREU EL WARNING XD!!!!!!!!!!!!!!!!!
-        return ESPdata.query.all()
+        results = ESPdata.query.all()
+        esp_list = []
+        for result in results:
+            esp = mapper.ESPdata_to_ESP_data(result)
+            esp_list.append(esp.__dict__)
+        return esp_list
 
+    # return a list with all esp registered that esp_id field is different from 'esp_id' #####
+    def get_esp_with_esp_id_different_from(self, esp_id):
+        results = ESPdata.query.filter(ESPdata.esp_id!=esp_id).all()
+        esp_list = []
+        for result in results:
+            esp = mapper.ESPdata_to_ESP_data(result)
+            esp_list.append(esp.__dict__)
+        return esp_list
+
+    #from the registered esps, return a list with the ones with 'type' #####
+    def get_esp_by_type(self, type):
+        results = ESPdata.query.filter_by(type=type)
+        esp_list = []
+        for result in results:
+            esp = mapper.ESPdata_to_ESP_data(result)
+            esp_list.append(esp.__dict__)
+        return esp_list
+
+    #return a list of esps with type field different from 'type' #####
+    def get_esp_with_type_different(self, type):
+        results = ESPdata.query.filter(ESPdata.type != type)
+        esp_list = []
+        for result in results:
+            esp = mapper.ESPdata_to_ESP_data(result)
+            esp_list.append(esp.__dict__)
+        return esp_list
+
+
+    #Get in the 'esp_data' table the ESPdata object with 'esp_id', and return its coordenates (x, y) #####
+    def get_coordenates_by_esp_id(self, esp_id):
+
+        esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
+        if esp_data is None:
+            return None
+        x = esp_data.x
+        y = esp_data.y
+        return x, y
+
+
+    #save volume_data #####
     def save_volume_data(self, volume_data):
-        #todo: save volume_data
         sqlVOLUMEdata = VOLUMEdata(volume_data.esp_id, volume_data.timestamp, volume_data.delay, volume_data.volume)
         db_session.add(sqlVOLUMEdata)
         db_session.commit()
-        pass
 
+
+    #Delete all volume_data entities stored in the #todo
     def delete_all_volumes(self):
-        #todo: delete all volume_data entities stored in the
         VOLUMEdata.query.all().delete()
+
+
+    #Get in the 'frame_data' table the SQLFrame with 'esp_id' and return its 'delay' field
+    def get_delay_by_esp_id(self, esp_id):
+        VOLdata = VOLUMEdata.query.filter_by(esp_id=esp_id)
+        if VOLdata is None:
+            return None
+        volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
+        delay = volume_data.delay
+        return delay
+
+
+
 
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
@@ -81,22 +105,11 @@ class DBService:
         #todo: Return the volume_data object with 'timestamp'
         volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp)
         return volume_data
-    
+
     def get_last_timestamp(self):
         volume_data = VOLUMEdata.query.order_by(asc(timestamp)).first()
         return volume_data.timestamp
 
-    def get_esp_by_type(self, type):
-        #todo: from the registered esps, return a list with the ones with 'type'
-        esps = ESPdata.query.filter_by(type=type)
-        return esps
 
-    def get_esp_with_type_different(self, type):
-        #todo: return a list of esps with type field different from 'type'
-        esps = ESPdata.query.filter_by(timestamp != timestamp)
-        return esps
 
-    def get_esp_with_esp_id_different_from(self, esp_id):
-        #todo: return a list with all esp registered that esp_id field is different from 'esp_id'
-        esps = ESPdata.query.filter_by(esp_id != esp_id)
-        return None
+

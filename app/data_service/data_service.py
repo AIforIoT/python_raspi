@@ -22,7 +22,7 @@ class Data_service:
         esp_x_axis = jsonData['esp_x_axis']
         esp_y_axis = jsonData['esp_y_axis']
         side = jsonData['side']
-        location= jsonData['location']
+        location = jsonData['location']
 
         esp_to_register = ESP_data(esp_id, esp_ip, esp_x_axis, esp_y_axis, esp_type, side, location)
         db_service.register_esp(esp_to_register)
@@ -48,13 +48,13 @@ class Data_service:
         volume = jsonData['volume']
 
         #If it is the first volume received for 'timestamp', start timer
-        if db_service.get_all_volumes_by_timestamp(timestamp) is None:
+#        if db_service.get_all_volumes_by_timestamp(timestamp) is None:
             #Delete previous db entries for past timestamps:
-            db_service.delete_all_volumes()
+#            db_service.delete_all_volumes()
 
             #Timer executes func  after 30ms
-            t = Timer(REQUEST_DATA_TIME, self.request_data_to_esp, args=timestamp)
-            t.start()
+#            t = Timer(REQUEST_DATA_TIME, self.request_data_to_esp, args=timestamp)
+#            t.start()
 
         #Save volume in db
         volume_data = Volume_data(esp_id, timestamp, delay, volume)
