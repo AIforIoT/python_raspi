@@ -63,7 +63,6 @@ class DBService:
 
     #Get in the 'esp_data' table the ESPdata object with 'esp_id', and return its coordenates (x, y) #####
     def get_coordenates_by_esp_id(self, esp_id):
-
         esp_data = ESPdata.query.filter_by(esp_id=esp_id).first()
         if esp_data is None:
             return None
@@ -79,10 +78,19 @@ class DBService:
         db_session.commit()
 
 
-    #Delete all volume_data entities stored in the #todo
+    #Delete all volume_data entities stored in the #####
     def delete_all_volumes(self):
-        VOLUMEdata.query.all().delete()
+        num_rows_deleted = db_session.query(VOLUMEdata).delete()
+        db_session.commit()
+        return num_rows_deleted
 
+    def get_all_volumes(self):
+        results = VOLUMEdata.query.all()
+        volumes = []
+        for result in results:
+            esp = mapper.VOLUMEdata_to_volume_data(result)
+            volumes.append(esp.__dict__)
+        return volumes
 
     #Get in the 'frame_data' table the SQLFrame with 'esp_id' and return its 'delay' field
     def get_delay_by_esp_id(self, esp_id):
@@ -93,9 +101,6 @@ class DBService:
         delay = volume_data.delay
         return delay
 
-
-
-
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
         VOLdata = VOLUMEdata.query.filter_by(timestamp=timestamp).order_by(desc(volume)).first()
@@ -104,8 +109,8 @@ class DBService:
         volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
         return volume_data
 
+    #Return the volume_data object with 'timestamp' #####
     def get_all_volumes_by_timestamp(self, timestamp):
-        #todo: Return the volume_data object with 'timestamp'
         results = VOLUMEdata.query.filter_by(timestamp=timestamp)
         vol_list = []
         for result in results:

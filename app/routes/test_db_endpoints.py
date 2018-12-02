@@ -1,8 +1,7 @@
-from flask import (Blueprint, request)
-import xmlrpc.client
+from flask import (Blueprint)
 from app.data_service.data_service import Data_service
 from app.database.db_service import DBService
-import logging, json
+import  json
 
 
 bp = Blueprint('test', __name__)
@@ -64,3 +63,27 @@ def get_delay_by_esp_id():
         return "", 404
     else:
         return json.dumps(esp), 200
+
+
+@bp.route('/delete_all_volumes', methods=['GET'])
+def delete_all_volumes():
+    num_rows_deleted = db_service.delete_all_volumes()
+    return json.dumps({'number_of_rows_deleted': num_rows_deleted}), 200
+
+
+@bp.route('/get_all_volumes_by_timestamp', methods=['GET'])
+def get_all_volumes_by_timestamp():
+    volumes = db_service.get_all_volumes_by_timestamp("123456789")
+    if volumes is None:
+        return "", 404
+    else:
+        return json.dumps(volumes), 200
+
+
+@bp.route('/get_all_volumes', methods=['GET'])
+def get_all_volumes():
+    volumes = db_service.get_all_volumes()
+    if volumes is None:
+        return "", 404
+    else:
+        return json.dumps(volumes), 200

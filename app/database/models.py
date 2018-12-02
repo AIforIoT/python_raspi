@@ -51,7 +51,7 @@ class ESPdata(Base):
         return ESP_data(self.esp_id, self.esp_ip, self.x, self.y, self.type, self.side, self.location)
     
 class VOLUMEdata(Base):
-    __tablename__='volume_data'
+    __tablename__ = 'volume_data'
     id = Column(Integer, primary_key=True)
     esp_id = Column(String(50), unique=True)
     timestamp = Column(String(50))

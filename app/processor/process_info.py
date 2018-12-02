@@ -44,7 +44,7 @@ class Info_processor:
 
 
         #When a decision has been taken: delete all volume entries in the db.
-        db_service.delete_all_volumes()
+        num_rows_deleted = db_service.delete_all_volumes()
 
 
     #This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
