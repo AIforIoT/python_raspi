@@ -3,10 +3,9 @@ from app.models.ESP_data import ESP_data
 from app.models.volume_data import Volume_data
 from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
-import numpy as np
 from threading import Timer
 
-REQUEST_DATA_TIME=10.0
+REQUEST_DATA_TIME = 0.50
 db_service = DBService()
 http_client = Http_service()
 
@@ -30,31 +29,31 @@ class Data_service:
 
     def request_data_to_esp(self, timestamp):
 
-        #TODO: change: active_esp_with_max_volume.get_volume and active_esp_with_max_volume.get_esp_id by real get methods
+        active_esp_volume_with_max_volume = db_service.get_volume_data_by_timestamp_and_volume_is_max(timestamp)
 
-        active_esp_with_max_volume = db_service.get_volume_data_by_timestamp_and_volume_is_max(timestamp)
-        active_esp_volumes_low_pw = db_service.get_volume_data_by_timestamp_and_volume_is_different(timestamp, active_esp_with_max_volume.get_volume)
+        active_esp_volumes_low_pw = db_service.get_volume_data_by_timestamp_and_esp_id_is_different(timestamp, active_esp_volume_with_max_volume['_Volume_data__esp_id'])
 
         http_client.reject_esp_data(active_esp_volumes_low_pw)
-        http_client.request_esp_data(active_esp_with_max_volume.get_esp_id)
+        http_client.request_esp_data(active_esp_volume_with_max_volume['_Volume_data__esp_id'])
 
 
     def process_volume(self, data):
 
-        jsonData = json.loads(data)
+        jsonData = json.loads(data.decode("utf-8"))
         esp_id = jsonData['esp_id']
         timestamp = jsonData['timestamp']
         delay = jsonData['delay']
         volume = jsonData['volume']
-
+        print(len(db_service.get_all_volumes_by_timestamp(timestamp)))
         #If it is the first volume received for 'timestamp', start timer
-#        if db_service.get_all_volumes_by_timestamp(timestamp) is None:
+        if len(db_service.get_all_volumes_by_timestamp(timestamp)) == 0:
+
             #Delete previous db entries for past timestamps:
-#            db_service.delete_all_volumes()
+            db_service.delete_all_volumes()
 
             #Timer executes func  after 30ms
-#            t = Timer(REQUEST_DATA_TIME, self.request_data_to_esp, args=timestamp)
-#            t.start()
+            t = Timer(REQUEST_DATA_TIME, self.request_data_to_esp, args=[timestamp])
+            t.start()
 
         #Save volume in db
         volume_data = Volume_data(esp_id, timestamp, delay, volume)

@@ -32,8 +32,9 @@ def get_audio():
     :return: 200 OK
     """
     global keyword_found
-
-    print(request.data)
+    print("*****************")
+    print(request.data.decode('utf-8'))
+    print("*****************")
 
     rdata = json.loads(request.data.decode('utf-8'))
     ide = request.remote_addr

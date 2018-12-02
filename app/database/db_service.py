@@ -84,6 +84,8 @@ class DBService:
         db_session.commit()
         return num_rows_deleted
 
+
+    #Return a list with all stored volumes #####
     def get_all_volumes(self):
         results = VOLUMEdata.query.all()
         volumes = []
@@ -92,32 +94,51 @@ class DBService:
             volumes.append(esp.__dict__)
         return volumes
 
-    #Get in the 'frame_data' table the SQLFrame with 'esp_id' and return its 'delay' field
-    def get_delay_by_esp_id(self, esp_id):
-        VOLdata = VOLUMEdata.query.filter_by(esp_id=esp_id)
-        if VOLdata is None:
-            return None
-        volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
-        delay = volume_data.delay
-        return delay
 
+    #Get in the 'frame_data' table the SQLFrame with 'esp_id' and return its 'delay' field #####
+    def get_delay_by_esp_id(self, esp_id):
+        results = VOLUMEdata.query.filter_by(esp_id=esp_id)
+        if results is None:
+            return None
+        for result in results:
+            esp = mapper.VOLUMEdata_to_volume_data(result)
+            return esp.__dict__['_Volume_data__delay']
+
+
+    #Return the volume_data object with 'timestamp' and volume property is the max. #####
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
-        #todo: Return the volume_data object with 'timestamp' and volume property is the max.
-        VOLdata = VOLUMEdata.query.filter_by(timestamp=timestamp).order_by(desc(volume)).first()
+        VOLdata = VOLUMEdata.query.filter_by(timestamp=timestamp).order_by(desc(VOLUMEdata.volume)).first()
         if VOLdata is None:
             return None
         volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
-        return volume_data
+        return volume_data.__dict__
 
     #Return the volume_data object with 'timestamp' #####
     def get_all_volumes_by_timestamp(self, timestamp):
         results = VOLUMEdata.query.filter_by(timestamp=timestamp)
+        if results is None:
+            return None
         vol_list = []
         for result in results:
             vol = mapper.VOLUMEdata_to_volume_data(result)
             vol_list.append(vol.__dict__)
         return vol_list
 
+    #Return the value of the most recent timestamp for all stored volumes.
     def get_last_timestamp(self):
-        volume_data = VOLUMEdata.query.order_by(asc(timestamp)).first()
-        return volume_data.timestamp
+        result = VOLUMEdata.query.order_by(desc(VOLUMEdata.timestamp)).first()
+        if result is None:
+            return None
+        volume_data = mapper.VOLUMEdata_to_volume_data(result)
+        return volume_data.__dict__['_Volume_data__timestamp']
+
+
+    def get_volume_data_by_timestamp_and_esp_id_is_different(self, timestamp, esp_id):
+        results = VOLUMEdata.query.filter_by(timestamp=timestamp).filter(VOLUMEdata.esp_id!=esp_id)
+        if results is None:
+            return None
+        vol_list = []
+        for result in results:
+            vol = mapper.VOLUMEdata_to_volume_data(result)
+            vol_list.append(vol.__dict__)
+        return vol_list

@@ -56,8 +56,8 @@ def get_esp_with_type_different():
         return json.dumps(esps), 200
 
 
-@bp.route('/get_delay_by_esp_id', methods=['GET'])
-def get_delay_by_esp_id():
+@bp.route('/get_esp_by_esp_id', methods=['GET'])
+def get_esp_by_esp_id():
     esp = db_service.get_delay_by_esp_id("192.168.2.26")
     if esp is None:
         return "", 404
@@ -87,3 +87,45 @@ def get_all_volumes():
         return "", 404
     else:
         return json.dumps(volumes), 200
+
+
+
+@bp.route('/get_delay_by_esp_id', methods=['GET'])
+def get_delay_by_esp_id():
+    delay = db_service.get_delay_by_esp_id("192.168.1.24")
+    if delay is None:
+        return "", 404
+    else:
+        return json.dumps({'delay': delay}), 200
+
+
+@bp.route('/get_volume_data_by_timestamp_and_volume_is_max', methods=['GET'])
+def get_volume_data_by_timestamp_and_volume_is_max():
+    volume = db_service.get_volume_data_by_timestamp_and_volume_is_max("123456789")
+    if volume is None:
+        return "", 404
+    else:
+        return json.dumps(volume), 200
+
+
+@bp.route('/get_last_timestamp', methods=['GET'])
+def get_last_timestamp():
+    timestamp = db_service.get_last_timestamp()
+    if timestamp is None:
+        return "", 404
+    else:
+        return json.dumps({'last_timestamp': timestamp}), 200
+
+
+@bp.route('/get_volume_data_by_timestamp_and_volume_is_different', methods=['GET'])
+def get_volume_data_by_timestamp_and_volume_is_different():
+    volume = db_service.get_volume_data_by_timestamp_and_volume_is_different("123456789", "192.168.1.26")
+    if volume is None:
+        return "", 404
+    else:
+        return json.dumps(volume), 200
+
+
+@bp.route('/send_response_to_esps', methods=['GET'])
+def dadad():
+    return None
