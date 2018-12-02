@@ -52,7 +52,7 @@ class Info_processor:
         #TODO
         #return esp_id_of_closest_esp_with_esp_type
         dists_dict = {}
-        for esp in db_service.get_all_esps(esp_type):
+        for esp in db_service.get_esp_by_type(esp_type):
             dists_dict[esp.id] = sqrt((x - esp.x)**2 + (y - esp.y)**2)
 
         ids = list(dists.keys())
