@@ -51,4 +51,11 @@ class Info_processor:
     def get_closest_esp_by_type(self, x, y, esp_type):
         #TODO
         #return esp_id_of_closest_esp_with_esp_type
-        return "192.168.1.13"
+        dists_dict = {}
+        for esp in db_service.get_all_esps(esp_type):
+            dists_dict[esp.id] = sqrt((x**2 - esp.x**2) + (y**2 - esp.y**2))
+
+        ids = list(dists.keys())
+        distances = list(dists.values())
+
+        return ids[ distances.index(min(distances)) ]

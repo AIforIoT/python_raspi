@@ -98,18 +98,21 @@ class DBService:
 
     def get_volume_data_by_timestamp_and_volume_is_max(self, timestamp):
         #todo: Return the volume_data object with 'timestamp' and volume property is the max.
-        volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp).order_by(desc(volume)).first()
+        VOLdata = VOLUMEdata.query.filter_by(timestamp=timestamp).order_by(desc(volume)).first()
+        if VOLdata is None:
+            return None
+        volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
         return volume_data
 
     def get_all_volumes_by_timestamp(self, timestamp):
         #todo: Return the volume_data object with 'timestamp'
-        volume_data = VOLUMEdata.query.filter_by(timestamp=timestamp)
-        return volume_data
+        results = VOLUMEdata.query.filter_by(timestamp=timestamp)
+        vol_list = []
+        for result in results:
+            vol = mapper.VOLUMEdata_to_volume_data(result)
+            vol_list.append(vol.__dict__)
+        return vol_list
 
     def get_last_timestamp(self):
         volume_data = VOLUMEdata.query.order_by(asc(timestamp)).first()
         return volume_data.timestamp
-
-
-
-
