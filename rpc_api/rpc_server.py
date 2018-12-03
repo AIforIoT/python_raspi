@@ -90,7 +90,7 @@ def send_data_request_object(data_request_object):
             return outputM
         else:
             speech = dc.detect_cloud("light_switch_off.wav")
-            outputM = outputMessage(speech[0],speech[1],speech[2],speech[3])
+            outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
             return outputM
 
         #TODO: save data_request_object in the db
