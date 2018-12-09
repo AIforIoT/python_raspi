@@ -55,7 +55,7 @@ class Info_processor:
         for esp in db_service.get_esp_by_type(esp_type):
             dists_dict[esp.id] = sqrt((x - esp.x)**2 + (y - esp.y)**2)
 
-        ids = list(dists.keys())
-        distances = list(dists.values())
+        ids = list(dists_dict.keys())
+        distances = list(dists_dict.values())
 
         return ids[ distances.index(min(distances)) ]
