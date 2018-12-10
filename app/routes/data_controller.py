@@ -5,6 +5,9 @@ from app.models.data_request_object import FrameData
 from app.processor.process_info import Info_processor
 import xmlrpc.client
 import json
+
+from app.AI.AI_service import send_data_request_object
+
 #from gpiozero import LED
 
 bp = Blueprint('data_controller', __name__)
@@ -24,99 +27,90 @@ keyword_found = False
 #red = LED(3)
 
 
-@bp.route('/audio', methods=['POST'])
-def get_audio():
+@bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
+def get_binary_audio(esp_id, eof):
     """
     ESP32 is sending us audio buffer!
 
     :return: 200 OK
     """
     global keyword_found
+    """
+    print(esp_id)
+    print("eof"+str(eof))
+    print("*****************")
+    print(request.data.decode('utf-8'))
+    print("*****************")
+    """
+    ide = request.remote_addr
+    data = request.data
 
-    #print(request.data)
+    #for i in range(int(len(data)/2)):
+    #    print(int.from_bytes(data[i*2:i*2+2], byteorder='big'))
 
-    rdata = json.loads(request.data.decode('utf-8'))
-    ide = request.remote_addr.split('.')[3]
-    data = rdata['data']
-    eof = rdata['EOF']
-    loca = rdata['location']
+    if ide not in buffersDict:
+        buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
+        positionsDict[ide] = 0
 
-    for d in data:
-        # data = request.data.split(b',')
-
-        byte = 0
-        try:
-            byte = int(d)
-            if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
-                fill_keyword_buffer(ide, byte)
-                if positionsDict[ide] == BUFFER_MAX_SIZE - 1:
+    if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
+        for i in range(int(len(data)/2)):
+            byte = 0
+            try:
+                byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
+                buffersDict[ide][int(positionsDict[ide])] = byte
+                positionsDict[ide] += 1
+                if positionsDict[ide] >= BUFFER_MAX_SIZE:
                     # KeyWord Spotting
-                    response = send_possible_keyword(ide)
-                    keyword_found = response['_outputMessage__iouti']
-                    if keyword_found is "True":
+                    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
+                    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+                    response = client.send_data_request_object(to_send)
+
+                    keyword_found = response.iouti
+                    
+                    if keyword_found:
                         #green.on()
                         pass
                     # Truncate
                     buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                     positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-            else:
-                fill_command_buffer(ide, byte)
-                if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE - 1:  # The buffer can overflow here!!
-                    print("BUG! Buffer is full! Exiting 'for' statement to not crash")
-                    break
+            except:
+                print("Error.... byte not int")
+               
+    else:
+        if ide not in commandsBufferDict:
+            commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
+            commandsPositionDict[ide] = 0
 
-        except Exception as e:
-            #print(e)
-            positionsDict[ide] = 0
-            pass
+        # data = request.data.split(b',')
+        for i in range(int(len(data)/2)):
+            byte = 0
+            try:
+                byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
+            except ValueError:
+                print("Error.... byte not int")
+            
+            commandsBufferDict[ide][int(commandsPositionDict[ide])] = byte
+            commandsPositionDict[ide] += 1
+            
+            if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE:  # The buffer can overflow here!!
+                print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+                break
 
-    if eof and ide in commandsPositionDict:
+    if not eof and not commandsPositionDict[ide]:
         print("End sending cmd")
 
-        info_processor.process_AI_data(send_possible_command(ide))
+        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
+        client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+        response = client.send_data_request_object(to_send)
+        info_processor.process_AI_data(response)
         
         keyword_found = False
-        reset_buffers(ide)
-        #green.off()
-        
-    return "200, OK"
-
-
-def fill_keyword_buffer(ide, data):
-    if ide not in buffersDict:
-        buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
+        commandsPositionDict[ide] = 0
         positionsDict[ide] = 0
 
-    buffersDict[ide][int(positionsDict[ide])] = data
-    positionsDict[ide] += 1
-
-
-def fill_command_buffer(ide, data):
-    if ide not in commandsBufferDict:
-        commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
-        commandsPositionDict[ide] = 0
-
-    commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
-    commandsPositionDict[ide] += 1
-
-
-def send_possible_keyword(ide):
-    print("Going to send")
-    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]), 0)
-    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-    return client.send_data_request_object(to_send)
-
-
-def send_possible_command(ide):
-    to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]), '1')
-    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-    return client.send_data_request_object(to_send)
-
-
-def reset_buffers(ide):
-    commandsPositionDict[ide] = 0
-    positionsDict[ide] = 0
-
+        #green.off()
+        
+    return "200", "OK"
 
 """
 @bp.route('/audio/end', methods=['POST'])

@@ -23,26 +23,9 @@ To make a method of the rpc_api server accessible from outside it is necessary t
 to the function.
 '''
 
-@handler.register
-def send_data_request_object(data_request_object):
+def send_data_request_object(data, esp_id, offset, iouti):
 
-    #try:
-        if (data_request_object['_FrameData__numpy_data'] == False):
-            return 400, 'data_request_object must be a FrameData type'
-
-        #if type(data_request_object) != FrameData: return 400, 'data_request_object must be a FrameData type'
-
-        #Deserialize data_request object
-        config_params = []
-        config_params.append(data_request_object['_FrameData__esp_id'])
-        config_params.append(data_request_object['_FrameData__offset'])
-        config_params.append(data_request_object['_FrameData__iouti'])
-
-        numpy_data = data_request_object['_FrameData__numpy_data']
-        print(type(numpy_data))
-        #numpy_data = np.array(numpy_data)
-
-        """
+         """
 
         folder_name = "audioRaspi"
         #Check if the folder where wavs are saved exists
@@ -63,8 +46,7 @@ def send_data_request_object(data_request_object):
             else:
                 index += 1
 
-        """
-        """
+
         print(numpy_data)
         #Generate the wav file with the appropiate index
         #file_name = "audio_" + index + ".wav"
@@ -81,25 +63,15 @@ def send_data_request_object(data_request_object):
         
 
         #file_names_list = glob.glob(os.path.join("local_keyword_detection/audio", '*.wav'))
-        print(config_params[2])
+        
         #Calls to Artificial Intelligence block and create object to return
-        if(config_params[2] == 0):
-            print("waiting iouti")
-            iouti_boolean = dk.detect('biel_achant.wav')
-            print(iouti_boolean)
-            outputM = outputMessage(iouti_boolean,"","","")
-            return outputM
-        else:
-            speech = dc.detect_cloud("light_switch_off.wav")
-            outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
-            return outputM
-
-        #TODO: save data_request_object in the db
-            #Check the esp_id one of the registered esps contained in the 'esp_data' table.
-            #IF there is already a data_request_object for esp_id, replace it with the new data
-            #Else create new entry
-
-    #except Exception:
-        #return 400, 'Bad request'
-
-        return 200, 'OK'
+    if(iouti == 0):
+        print("waiting iouti")
+        iouti_boolean = dk.detect('biel_achant.wav')
+        print(iouti_boolean)
+        outputM = outputMessage(iouti_boolean,"","","")
+        return outputM
+    else:
+        speech = dc.detect_cloud("light_switch_off.wav")
+        outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
+        return outputM
