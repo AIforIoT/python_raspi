@@ -60,9 +60,9 @@ def get_binary_audio(esp_id, eof):
                 positionsDict[ide] += 1
                 if positionsDict[ide] >= BUFFER_MAX_SIZE:
                     # KeyWord Spotting
-                    to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
-                    client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                    response = client.send_data_request_object(to_send)
+                    #to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
+                    #client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+                    response = client.send_data_request_object(bufferDict[ide], ide, str(positionsDict[ide]), 0)
 
                     keyword_found = response.iouti
                     
@@ -72,9 +72,8 @@ def get_binary_audio(esp_id, eof):
                     # Truncate
                     buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                     positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-            except:
-                print("Error.... byte not int")
-               
+            except Exception as e:
+                positionsDict[ide]=0
     else:
         if ide not in commandsBufferDict:
             commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
@@ -98,9 +97,9 @@ def get_binary_audio(esp_id, eof):
     if not eof and not commandsPositionDict[ide]:
         print("End sending cmd")
 
-        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
-        client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-        response = client.send_data_request_object(to_send)
+        #to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
+        #client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
+        response = client.send_data_request_object(commandsBufferDict[ide], ide, str(commandsPositionDict[ide]), 1)
         info_processor.process_AI_data(response)
         
         keyword_found = False
