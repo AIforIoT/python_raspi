@@ -64,6 +64,7 @@ def send_data_request_object(data_request_object):
                 index += 1
 
         """
+        """
         print(numpy_data)
         #Generate the wav file with the appropiate index
         #file_name = "audio_" + index + ".wav"
@@ -76,7 +77,7 @@ def send_data_request_object(data_request_object):
 
         #Move wav file to folder where they are stored
         #os.rename("./" + file_name, "./audioRaspi/" + file_name)
-
+        """
         
 
         #file_names_list = glob.glob(os.path.join("local_keyword_detection/audio", '*.wav'))

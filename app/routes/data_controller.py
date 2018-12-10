@@ -66,7 +66,8 @@ def get_audio():
                     break
 
         except Exception as e:
-            print(e)
+            #print(e)
+            positionsDict[ide] = 0
             pass
 
     if eof and ide in commandsPositionDict:
