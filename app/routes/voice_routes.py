@@ -10,6 +10,7 @@ SET_UP_TIMER = 2.0
 @bp.route('/setUp', methods=['POST'])
 def save_esp_setup_data():
     #Wait SET_UP_TIMER time until the ESP changes state
+    print(request.data.decode('utf-8'))
     time.sleep(SET_UP_TIMER)
 
     try:

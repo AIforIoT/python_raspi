@@ -24,23 +24,27 @@ keyword_found = False
 #red = LED(3)
 
 
-@bp.route('/audio', methods=['POST'])
-def get_audio():
+@bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
+def get_binary_audio(esp_id, eof):
     """
     ESP32 is sending us audio buffer!
 
     :return: 200 OK
     """
     global keyword_found
+    print(esp_id)
+    print("eof"+str(eof))
     print("*****************")
     print(request.data.decode('utf-8'))
     print("*****************")
 
-    rdata = json.loads(request.data.decode('utf-8'))
+    pass
+
     ide = request.remote_addr
-    data = rdata['data']
-    eof = rdata['EOF']
-    loca = rdata['location']
+    data = request.data.decode('utf-8')
+
+    for char in data:
+        print(ord(char))
 
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
