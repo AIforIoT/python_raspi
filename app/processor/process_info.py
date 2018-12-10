@@ -23,12 +23,10 @@ class Info_processor:
         location_required = AI_data['_outputMessage__location']
 
         if location_required == True:
-            print("Yes Location used")
-
             #GET ESP the most recent 'timestamp' from volumes
             timestamp = db_service.get_last_timestamp()
 
-            # Get x,y coordinates of the speaker
+            # Get x,y coordenates from speaker
             #x, y = localization.get_x_y() #TODO: GET PARAMS!!!
             x, y = 1, 2
             esp_id = self.get_closest_esp_by_type(x, y, typeObj)
@@ -38,12 +36,13 @@ class Info_processor:
             http_service.request_esp_volumes(leftover_esp_list)
 
         else: #location_required == False
-            print("No location used")
+
             esps_with_requested_type = db_service.get_esp_by_type(typeObj)
             http_service.send_http_action(esps_with_requested_type, action)
 
             esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(typeObj)
             http_service.request_esp_volumes(esps_with_type_dif_from_requested)
+
 
         #When a decision has been taken: delete all volume entries in the db.
         num_rows_deleted = db_service.delete_all_volumes()
