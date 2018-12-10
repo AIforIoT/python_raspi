@@ -2,6 +2,8 @@ from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
 #from app.localization.localization import Localization
 import logging, math
+#from app.localization.localization import Localization
+import logging
 
 db_service = DBService()
 #localization = Localization()
