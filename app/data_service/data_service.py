@@ -24,7 +24,11 @@ class Data_service:
         side = jsonData['side']
         location = jsonData['location']
         esp_to_register = ESP_data(esp_id, esp_ip, esp_x_axis, esp_y_axis, esp_type, side, location)
-        db_service.register_esp(esp_to_register)
+
+        if db_service.is_esp_id_present(esp_id):
+            db_service.update_registered_esp(esp_to_register)
+        else:
+            db_service.register_esp(esp_to_register)
 
     def request_data_to_esp(self, timestamp):
 
