@@ -2,6 +2,7 @@ from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
 #from app.localization.localization import Localization
 import logging
+import math
 
 db_service = DBService()
 #localization = Localization()
@@ -53,9 +54,10 @@ class Info_processor:
         #return esp_id_of_closest_esp_with_esp_type
         dists_dict = {}
         for esp in db_service.get_esp_by_type(esp_type):
-            dists_dict[esp.id] = sqrt((x - esp.x)**2 + (y - esp.y)**2)
+            dists_dict[esp["_ESP_data__esp_id"]] = math.sqrt((float(x) - float(esp["_ESP_data__x"]))**2 + (float(y) - float(esp["_ESP_data__y"]))**2)
 
-        ids = list(dists_dict.keys())
-        distances = list(dists_dict.values())
+        print(dists_dict)
+        ids=list(dists_dict.keys())
+        distances=list(dists_dict.values())
 
         return ids[ distances.index(min(distances)) ]
