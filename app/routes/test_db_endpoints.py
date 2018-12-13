@@ -1,13 +1,16 @@
 from flask import (Blueprint)
 from app.data_service.data_service import Data_service
 from app.database.db_service import DBService
-import  json
-
+from app.processor.process_info import Info_processor
+from app.models.AI_outMessage import outputMessage
+import json
 
 bp = Blueprint('test', __name__)
 
 data_service = Data_service()
 db_service = DBService()
+info_processor = Info_processor()
+
 
 timeout = None
 
@@ -22,6 +25,16 @@ def get_impulse():
 
 @bp.route('/esps', methods=['GET'])
 def get_esps():
+
+    var = chr(1)
+    var2 = chr(2)
+    var3 = chr(19)
+
+    varX = var+var2+var3
+
+    print(varX)
+    #print(ord(''))
+
     esps = db_service.get_all_esps()
     if esps is None:
         return "", 404
@@ -126,6 +139,21 @@ def get_volume_data_by_timestamp_and_volume_is_different():
         return json.dumps(volume), 200
 
 
-@bp.route('/send_response_to_esps', methods=['GET'])
-def dadad():
-    return None
+@bp.route('/test_process_data', methods=['GET'])
+def test_process_data():
+
+    iouti = False
+    status = 0
+    location = False
+    typeObj = 'light'
+
+    output_message = outputMessage(iouti, status, location, typeObj)
+    info_processor.process_AI_data(output_message)
+
+    return 'OK', 200
+
+
+@bp.route('/delete_all_ESPs', methods=['GET'])
+def delete_all_ESPs():
+    num_rows_deleted = db_service.delete_all_ESPs()
+    return json.dumps({'number_of_rows_deleted': num_rows_deleted}), 200

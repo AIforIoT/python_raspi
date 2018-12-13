@@ -5,6 +5,8 @@ from app.models.data_request_object import FrameData
 from app.processor.process_info import Info_processor
 import xmlrpc.client
 import json
+from app.AI.AI_service import send_data_request_object
+
 #from gpiozero import LED
 
 bp = Blueprint('data_controller', __name__)
@@ -24,34 +26,36 @@ keyword_found = False
 #red = LED(3)
 
 
-@bp.route('/audio', methods=['POST'])
-def get_audio():
+@bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
+def get_binary_audio(esp_id, eof):
     """
     ESP32 is sending us audio buffer!
 
     :return: 200 OK
     """
     global keyword_found
+    """
+    print(esp_id)
+    print("eof"+str(eof))
     print("*****************")
     print(request.data.decode('utf-8'))
     print("*****************")
-
-    rdata = json.loads(request.data.decode('utf-8'))
+    """
     ide = request.remote_addr
-    data = rdata['data']
-    eof = rdata['EOF']
-    loca = rdata['location']
+    data = request.data
+
+    #for i in range(int(len(data)/2)):
+    #    print(int.from_bytes(data[i*2:i*2+2], byteorder='big'))
 
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
         positionsDict[ide] = 0
 
     if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
-        # data = request.data.split(b',')
-        for d in data:
+        for i in range(int(len(data)/2)):
             byte = 0
             try:
-                byte = int(d)
+                byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
                 buffersDict[ide][int(positionsDict[ide])] = byte
                 positionsDict[ide] += 1
                 if positionsDict[ide] >= BUFFER_MAX_SIZE:
@@ -77,10 +81,10 @@ def get_audio():
             commandsPositionDict[ide] = 0
 
         # data = request.data.split(b',')
-        for d in data:
+        for i in range(int(len(data)/2)):
             byte = 0
             try:
-                byte = int(d)
+                byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
             except ValueError:
                 print("Error.... byte not int")
             

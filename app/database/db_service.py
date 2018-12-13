@@ -24,6 +24,13 @@ class DBService:
         db_session.add(sqlESPdata)
         db_session.commit()
 
+
+    #Delete all ESPdata entities stored in the db #####
+    def delete_all_ESPs(self):
+        num_rows_deleted = db_session.query(ESPdata).delete()
+        db_session.commit()
+        return num_rows_deleted
+
     #Return a list with all registered ESPs #####
     def get_all_esps(self):
         results = ESPdata.query.all()
