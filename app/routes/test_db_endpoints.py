@@ -1,8 +1,9 @@
-from flask import (Blueprint)
+from flask import (Blueprint , request)
 from app.data_service.data_service import Data_service
 from app.database.db_service import DBService
 from app.processor.process_info import Info_processor
 from app.models.AI_outMessage import outputMessage
+from app.models.ESP_data import ESP_data
 import json
 
 bp = Blueprint('test', __name__)
@@ -157,3 +158,20 @@ def test_process_data():
 def delete_all_ESPs():
     num_rows_deleted = db_service.delete_all_ESPs()
     return json.dumps({'number_of_rows_deleted': num_rows_deleted}), 200
+
+
+@bp.route('/update_ESP_data', methods=['POST'])
+def update_ESP_data():
+
+    jsonData = json.loads(request.data.decode("utf-8"))
+    esp_id = jsonData['esp_id']
+    esp_ip = jsonData['esp_ip']
+    esp_type = jsonData['esp_type']
+    esp_x_axis = jsonData['esp_x_axis']
+    esp_y_axis = jsonData['esp_y_axis']
+    side = jsonData['side']
+    location = jsonData['location']
+    esp_data = ESP_data(esp_id, esp_ip, esp_x_axis, esp_y_axis, esp_type, side, location)
+    db_service.update_registered_esp(esp_data)
+
+    return 'OK', 200
