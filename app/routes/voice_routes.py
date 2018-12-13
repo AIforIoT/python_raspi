@@ -27,7 +27,7 @@ def get_volume():
     try:
     	data_service.process_volume(request.data)
     except Exception as err:
-    	print(err)
+    	print("Error Get Volume: {}".format(err))
     return 'OK', 200
 
 

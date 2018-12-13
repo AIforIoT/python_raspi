@@ -104,4 +104,7 @@ venv.bak/
 artificial_intelligence/
 local_keyword_detection/
 
+# Audios generated from ESP
+app/AI/audio/
+
 *.wav

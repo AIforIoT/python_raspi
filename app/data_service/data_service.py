@@ -5,7 +5,7 @@ from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
 from threading import Timer
 
-REQUEST_DATA_TIME = 4.0
+REQUEST_DATA_TIME = 0.5
 ESP_CHANGING_TIME= 3.0
 db_service = DBService()
 http_client = Http_service()
@@ -27,11 +27,8 @@ class Data_service:
         db_service.register_esp(esp_to_register)
 
     def request_data_to_esp(self, timestamp):
-
         active_esp_volume_with_max_volume = db_service.get_volume_data_by_timestamp_and_volume_is_max(timestamp)
-
         active_esp_volumes_low_pw = db_service.get_volume_data_by_timestamp_and_esp_id_is_different(timestamp, active_esp_volume_with_max_volume['_Volume_data__esp_id'])
-
         time.sleep(ESP_CHANGING_TIME)
         http_client.reject_esp_data(active_esp_volumes_low_pw)
         http_client.request_esp_data(active_esp_volume_with_max_volume['_Volume_data__esp_id'])

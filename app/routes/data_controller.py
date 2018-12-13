@@ -12,7 +12,7 @@ from app.AI.AI_service import send_data_request_object
 bp = Blueprint('data_controller', __name__)
 
 info_processor = Info_processor()
-BUFFER_MAX_SIZE = 16000  # Size of the buffer (To be changed)
+BUFFER_MAX_SIZE = 48000  # Size of the buffer (To be changed)
 BUFFER_CMD_MAX_SIZE = 64000  # Size of the buffer that will save the whole audio. (To be changed)
 
 # Declare buffers
@@ -28,29 +28,42 @@ keyword_found = False
 
 @bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
 def get_binary_audio(esp_id, eof):
-    """
-    ESP32 is sending us audio buffer!
 
-    :return: 200 OK
-    """
+    # ESP32 is sending us audio buffer!
+    
     global keyword_found
 
     ide = request.remote_addr
     data = request.data
-
-    #for i in range(int(len(data)/2)):
-    #    print(int.from_bytes(data[i*2:i*2+2], byteorder='big'))
-
+    
+    # 20 bytes of data include 10 samples of audio (8 bit + 8 bit = 16 bit sample) - 15 bit are useful, 16 bit is 1 but never used. [1:16]
     for i in range(int(len(data)/2)):
-        byte = 0
         try:
-            byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
-        except:
-            pass
+
+        	# Join the two bytes received into a string and include the 0 necessary for 16 bit variable
+            byte = ''.join([str(0)]*(8-len(bin(data[i*2])[2:]))) + bin(data[i*2])[2:] + ''.join([str(0)]*(8-len(bin(data[i*2+1])[2:]))) + bin(data[i*2+1])[2:]      
+            
+            # bit 15 has the sign
+            sign = byte[1]
+
+            # if the sign is 0, positive - map value to int with base 2
+            if sign is '0':
+                byte = int(byte[1:16], 2)
+            
+            # if the sign is 1, negative - ca2 (change 0 to 1 and add 1)
+            else:
+                byte = byte[1:16].replace('1','2').replace('0','1').replace('2','0')
+                byte = -(int(byte[1:16], 2) + 1)
+
+        except Exception as e:
+            print("Error Interpreting values!")
+            print(e)
+            byte=0
+        
 
         if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
             feed_keyword_buffer(ide, byte)
-            if positionsDict[ide] >= BUFFER_MAX_SIZE -1:
+            if positionsDict[ide] >= BUFFER_MAX_SIZE-1:
                 # KeyWord Spotting
                 try:
                     response = send_to_ai(0, ide)
@@ -69,7 +82,7 @@ def get_binary_audio(esp_id, eof):
 
         else:
             feed_command_buffer(ide, byte)
-            
+                
             if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
                 print("BUG! Buffer is full! Exiting 'for' statement to not crash")
                 break

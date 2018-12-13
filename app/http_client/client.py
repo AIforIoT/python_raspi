@@ -21,6 +21,7 @@ class HTTP_CLIENT:
                 logging.info(response_string)
             else:
                 logging.error(response_string)
-        except:
+        except Exception as e:
+            #print(e)
             logging.error("Impossible to establish connection with host: "+str(host))
 

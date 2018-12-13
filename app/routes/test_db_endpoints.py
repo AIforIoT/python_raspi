@@ -3,6 +3,7 @@ from app.data_service.data_service import Data_service
 from app.database.db_service import DBService
 from app.processor.process_info import Info_processor
 from app.models.AI_outMessage import outputMessage
+from app.AI.AI_service import send_data_request_object
 import json
 
 bp = Blueprint('test', __name__)
@@ -157,3 +158,10 @@ def test_process_data():
 def delete_all_ESPs():
     num_rows_deleted = db_service.delete_all_ESPs()
     return json.dumps({'number_of_rows_deleted': num_rows_deleted}), 200
+
+
+@bp.route('/testAI', methods=['GET'])
+def test_ai():
+    print("**************************ESTIC FENT EL PUTO TEST")
+    data = [10, 20]
+    response = send_data_request_object(data, "192.168.5.12", 344234, 1)

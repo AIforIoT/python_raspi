@@ -28,56 +28,60 @@ PATH = path.dirname(path.realpath(__file__))
 def send_data_request_object(data, esp_id, offset, iouti):
 
     folder_name = PATH+'/audio'
-    #Check if the folder where wavs are saved exists
-    if((path.isdir(folder_name)) == false):
-      os.mkdir(folder_name)
+    
+    # Check if the folder where wavs are saved exists
+    if path.isdir(folder_name) == False:
+        os.mkdir(folder_name)
     else:
-      pass
-
-    #Check if the folder is empty for selecting the correct index
+        pass
+    
+    index = 0
+    
+    # Check if the folder is empty for selecting the correct index
     if not os.listdir(folder_name):
-      index = 0
-    else:
-      list_files = glob.glob(folder_name+"/*.wav")
-      latest_file = max(list_of_files, key=os.path.getctime)
-      index = latest_file.split('_')[1]
-      if(index == 5):
         index = 0
-      else:
-        index += 1
+    else:
+        # List the wav files in the audio folder
+        list_files = glob.glob(folder_name+"/*.wav")
 
-    print(data)
+        # Get the last audio file created
+        latest_file = max(list_files, key=os.path.getctime)
 
-    plt.plot(data)
-    plt.show()
+        # Get the index of this audio file
+        index = int(latest_file.split('_')[2].replace(".wav",""))
+        
+        if index is 10:
+            index = 0
+        else:
+            index += 1
+
+    # Save the values received
+    #file = open(folder_name+"/audio_mic.txt","w")
+    #for value in data:
+    #    file.write(str(int(value))+'\n')
+    #file.close()
+
+    print("WAV " + str(index) + "created" + str(index))
 
     array = list(map(int, data))
-
-    # Values from 0,4096 to -1,1
-    #scaled = translate(array, -np.max(np.abs(array)), np.max(np.abs(array)), -32767, 32767)
-
-    print(array)
 
     # Scale those values to -32767 to 32767 (wav format)
     scaled = np.int16(array/np.max(np.abs(array)) * 32767)
 
-    #write('test2.wav', 16000, scaled)
+    # Write the wav file
+    wav_name = folder_name+'/audio_'+str(index)+'.wav'
+    write(wav_name, 16000, scaled)
    
-
-
-   #Move wav file to folder where they are stored
-   #os.rename("./" + file_name, "./audioRaspi/" + file_name)
-
-
-    #file_names_list = glob.glob(os.path.join("local_keyword_detection/audio", '*.wav'))
-    #Calls to Artificial Intelligence block and create object to return
-    if (iouti == 0):
-        print("waiting iouti")
-        iouti_boolean = dk.detect('biel_achant.wav')
-        print(iouti_boolean)
+    # Calls to Artificial Intelligence block and create object to return
+    if iouti is 0:
+        print("Calling local Keyword detector ...")
+        iouti_boolean = dk.detect(wav_name)
+        print("Keyword detected: " + str(iouti_boolean))
         outputM = outputMessage(iouti_boolean,"","","")
         return outputM
     else:
+        print("Calling speech detector ...")
         speech = dc.detect_cloud("light_switch_off.wav")
+        print("Text detected: " + str(speech[3]))
         outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
         return outputM
