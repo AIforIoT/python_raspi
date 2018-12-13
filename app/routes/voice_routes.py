@@ -24,7 +24,10 @@ def save_esp_setup_data():
 @bp.route('/volume', methods=['POST'])
 def get_volume():
     print(request.data.decode("utf-8"))
-    data_service.process_volume(request.data)
+    try:
+    	data_service.process_volume(request.data)
+    except Exception as err:
+    	print(err)
     return 'OK', 200
 
 
