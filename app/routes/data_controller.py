@@ -34,122 +34,92 @@ def get_binary_audio(esp_id, eof):
     :return: 200 OK
     """
     global keyword_found
-    """
-    print(esp_id)
-    print("eof"+str(eof))
-    print("*****************")
-    print(request.data.decode('utf-8'))
-    print("*****************")
-    """
+
     ide = request.remote_addr
     data = request.data
 
     #for i in range(int(len(data)/2)):
     #    print(int.from_bytes(data[i*2:i*2+2], byteorder='big'))
 
+    for i in range(int(len(data)/2)):
+        byte = 0
+        try:
+            byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
+        except:
+            pass
+
+        if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
+            feed_keyword_buffer(ide, byte)
+            if positionsDict[ide] >= BUFFER_MAX_SIZE -1:
+                # KeyWord Spotting
+                try:
+                    response = send_to_ai(0, ide)
+                    keyword_found = response.iouti
+                except Exception as e:
+                    print(e)
+
+                if keyword_found:
+                    positionsDict[ide] = 0
+                    #green.on()
+                    pass
+                else:
+                    # Truncate
+                    buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
+                    positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+
+        else:
+            feed_command_buffer(ide, byte)
+            
+            if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
+                print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+                break
+
+    if eof==1 and keyword_found:
+        print("End sending cmd")
+
+        try:
+            response = send_to_ai(keyword_found, ide)
+            info_processor.process_AI_data(response)
+        except Exception as e:
+            print(e)
+
+        keyword_found = 0
+        commandsPositionDict[ide] = 0
+        positionsDict[ide] = 0
+
+    elif eof==1 and not keyword_found:
+        print("End sending keyword")
+
+        try:
+            response = send_to_ai(keyword_found, ide)
+            keyword_found = response.iouti
+        except Exception as e:
+            print(e)
+        
+        commandsPositionDict[ide] = 0
+        positionsDict[ide] = 0
+        #green.off()
+        
+    return "200, OK"
+
+
+def feed_keyword_buffer(ide, data):
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
         positionsDict[ide] = 0
 
-    if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
-        for i in range(int(len(data)/2)):
-            byte = 0
-            try:
-                byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
-                buffersDict[ide][int(positionsDict[ide])] = byte
-                positionsDict[ide] += 1
-                if positionsDict[ide] >= BUFFER_MAX_SIZE:
-                    # KeyWord Spotting
-                    #to_send = FrameData(np.array2string(buffersDict[ide]), ide, str(positionsDict[ide]))
-                    #client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-                    response = client.send_data_request_object(bufferDict[ide], ide, str(positionsDict[ide]), 0)
+    buffersDict[ide][int(positionsDict[ide])] = data
+    positionsDict[ide] += 1
 
-                    keyword_found = response.iouti
-                    
-                    if keyword_found:
-                        #green.on()
-                        pass
-                    # Truncate
-                    buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
-                    positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-            except Exception as e:
-                positionsDict[ide]=0
-    else:
-        if ide not in commandsBufferDict:
-            commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
-            commandsPositionDict[ide] = 0
-
-        # data = request.data.split(b',')
-        for i in range(int(len(data)/2)):
-            byte = 0
-            try:
-                byte = int.from_bytes(data[i*2:i*2+2], byteorder='big')
-            except ValueError:
-                print("Error.... byte not int")
-            
-            commandsBufferDict[ide][int(commandsPositionDict[ide])] = byte
-            commandsPositionDict[ide] += 1
-            
-            if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE:  # The buffer can overflow here!!
-                print("BUG! Buffer is full! Exiting 'for' statement to not crash")
-                break
-
-    if not eof and not commandsPositionDict[ide]:
-        print("End sending cmd")
-
-        #to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]),'1')
-        #client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-        response = client.send_data_request_object(commandsBufferDict[ide], ide, str(commandsPositionDict[ide]), 1)
-        info_processor.process_AI_data(response)
-        
-        keyword_found = False
-        commandsPositionDict[ide] = 0
-        positionsDict[ide] = 0
-
-        #green.off()
-        
-    return "200", "OK"
-
-"""
-@bp.route('/audio/end', methods=['POST'])
-def end_sending():
-
-    global keyword_found, green
-
-    rdata = json.loads(request.data)
-    ide = rdata['ide']
-    data = rdata['data']
-
+def feed_command_buffer(ide, data):
     if ide not in commandsBufferDict:
         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
         commandsPositionDict[ide] = 0
+    commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
+    commandsPositionDict[ide] += 1
 
-    # data = request.data.split(b',')
-    for d in data:
-        byte = 0
-        try:
-            byte = int(d)
-        except ValueError:
-            print("Error.... byte not int")
-
-        commandsBufferDict[ide][int(commandsPositionDict[ide])] = byte
-        commandsPositionDict[ide] += 1
-
-        if commandsPositionDict[ide] == BUFFER_CMD_MAX_SIZE:  # The buffer can overflow here!!
-            print("BUG! Buffer is full! Exiting 'for' statement to not crash")
-            break
-
-    if commandsPositionDict[ide] is not 0:
-        print("End sending cmd")
-
-        to_send = FrameData(np.array2string(commandsBufferDict[ide]), ide, str(commandsPositionDict[ide]))
-        client = xmlrpc.client.ServerProxy("http://localhost:8082/api")
-        client.send_data_request_object(to_send)
-
-    keyword_found = False
-    commandsPositionDict[ide] = 0
-    positionsDict[ide] = 0
-
-    #green.off()
-    return "200", "OK"
-"""
+def send_to_ai(keyword, ide):
+    if not keyword:
+        return send_data_request_object(buffersDict[ide], ide, str(positionsDict[ide]), keyword)
+    else:
+        return send_data_request_object(commandsBufferDict[ide], ide, str(positionsDict[ide]), keyword)

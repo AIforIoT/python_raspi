@@ -7,9 +7,7 @@ from flask_xmlrpcre.xmlrepcre import Fault
 from local_keyword_detection import detect_keyword as dk
 from artificial_intelligence import detect_command as dc
 
-#from scipy.io.wavfile import write
-#from wavio import write
-import wave
+from scipy.io.wavfile import write
 
 import numpy as np
 import json
@@ -45,21 +43,20 @@ def send_data_request_object(data, esp_id, offset, iouti):
            index = 0
        else:
            index += 1
+    """
 
-
-   print(numpy_data)
+    print(data)
    #Generate the wav file with the appropiate index
    #file_name = "audio_" + index + ".wav"
-   rate = 16000
+    rate = 16000
    #genFile(rate, 8, 1, numpy_data)
-   wav = wave.open("audio5.wav", "wb")
-   wav.writeframes(numpy_data)
-   #write("audio4.wav",rate, numpy_data)
-   wav.close()
+   #wav = wave.open("audio5.wav", "wb")
+   #wav.writeframes(numpy_data)
+    write("audio4.wav",rate, data)
 
    #Move wav file to folder where they are stored
    #os.rename("./" + file_name, "./audioRaspi/" + file_name)
-   """
+
 
     #file_names_list = glob.glob(os.path.join("local_keyword_detection/audio", '*.wav'))
     #Calls to Artificial Intelligence block and create object to return
