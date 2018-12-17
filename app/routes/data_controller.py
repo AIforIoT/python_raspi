@@ -40,7 +40,7 @@ def get_binary_audio(esp_id, eof):
     for i in range(int(len(data)/2)):
         try:
 
-        	# Join the two bytes received into a string and include the 0 necessary for 16 bit variable
+            # Join the two bytes received into a string and include the 0 necessary for 16 bit variable
             byte = ''.join([str(0)]*(8-len(bin(data[i*2])[2:]))) + bin(data[i*2])[2:] + ''.join([str(0)]*(8-len(bin(data[i*2+1])[2:]))) + bin(data[i*2+1])[2:]      
             
             # bit 15 has the sign
@@ -124,10 +124,17 @@ def feed_keyword_buffer(ide, data):
     buffersDict[ide][int(positionsDict[ide])] = data
     positionsDict[ide] += 1
 
+    if positionsDict[ide] >= BUFFER_MAX_SIZE-1:
+        positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+
+
 def feed_command_buffer(ide, data):
     if ide not in commandsBufferDict:
         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
         commandsPositionDict[ide] = 0
+    if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
+        print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+        return
     commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
     commandsPositionDict[ide] += 1
 

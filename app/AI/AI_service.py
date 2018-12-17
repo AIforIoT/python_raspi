@@ -61,7 +61,7 @@ def send_data_request_object(data, esp_id, offset, iouti):
     #    file.write(str(int(value))+'\n')
     #file.close()
 
-    print("WAV " + str(index) + "created" + str(index))
+    print("WAV " + str(index) + " created")
 
     array = list(map(int, data))
 
