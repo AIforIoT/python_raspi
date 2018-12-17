@@ -1,6 +1,6 @@
 from app.database.database import db_session
 from app.database.models import SQLFrame, ESPdata, VOLUMEdata
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, func, select
 from app.data_service.mapper import Mapper
 
 mapper = Mapper()
@@ -24,6 +24,30 @@ class DBService:
         db_session.add(sqlESPdata)
         db_session.commit()
 
+    #Update a registered ESP data by esp_id
+    def update_registered_esp(self, esp_to_update):
+
+        count = ESPdata.query.filter_by(esp_id=esp_to_update.esp_id).count()
+        db_session.commit()
+
+        if(count==0):
+            return
+        obj = ESPdata.query.filter_by(esp_id=esp_to_update.esp_id).one()
+
+        if(obj is not None):
+            print("tnt")
+            db_session.delete(obj)
+            db_session.commit()
+        self.register_esp(esp_to_update)
+
+
+    def is_esp_id_present(self, esp_id):
+        esps = ESPdata.query.filter_by(esp_id=esp_id).all()
+        db_session.commit()
+        if(len(esps)==0):
+            return False
+        else:
+            return True
 
     #Delete all ESPdata entities stored in the db #####
     def delete_all_ESPs(self):

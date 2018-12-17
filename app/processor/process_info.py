@@ -4,6 +4,7 @@ from app.http_client.http_client_service import Http_service
 import logging, math
 #from app.localization.localization import Localization
 import logging
+import math
 
 db_service = DBService()
 #localization = Localization()
@@ -52,14 +53,14 @@ class Info_processor:
 
     #This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
     def get_closest_esp_by_type(self, x, y, esp_type):
-        #TODO return esp_id_of_closest_esp_with_esp_type
-        #dists_dict = {}
-        #for esp in db_service.get_esp_by_type(esp_type):
-        #    dists_dict[esp['_ESP_data__esp_id']] = math.sqrt((x - esp['_ESP_data__x'])**2 + (y - esp['_ESP_data__y'])**2)
+        #return esp_id_of_closest_esp_with_esp_type
+        dists_dict = {}
+        for esp in db_service.get_esp_by_type(esp_type):
+            dists_dict[esp["_ESP_data__esp_id"]] = math.sqrt((float(x) - float(esp["_ESP_data__x"]))**2 + (float(y) -     float(esp["_ESP_data__y"]))**2)
 
-        #ids = list(dists_dict.keys())
-        #distances = list(dists_dict.values())
-        #print("ESP_ID: ? ")
-        #print(ids[distances.index(min(distances))])
-        #return ids[distances.index(min(distances))]
-        return "192.168.43.20"
+        print(dists_dict)
+        ids=list(dists_dict.keys())
+        distances=list(dists_dict.values())
+
+        return ids[ distances.index(min(distances)) ]
+
