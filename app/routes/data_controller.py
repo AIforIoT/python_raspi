@@ -5,6 +5,7 @@ from app.models.data_request_object import FrameData
 from app.processor.process_info import Info_processor
 import xmlrpc.client
 import json
+import os
 from app.AI.AI_service import send_data_request_object
 
 #from gpiozero import LED
@@ -12,7 +13,7 @@ from app.AI.AI_service import send_data_request_object
 bp = Blueprint('data_controller', __name__)
 
 info_processor = Info_processor()
-BUFFER_MAX_SIZE = 48000  # Size of the buffer (To be changed)
+BUFFER_MAX_SIZE = 32000  # Size of the buffer (To be changed)
 BUFFER_CMD_MAX_SIZE = 64000  # Size of the buffer that will save the whole audio. (To be changed)
 
 # Declare buffers
@@ -20,22 +21,31 @@ buffersDict = dict()
 positionsDict = dict()
 commandsBufferDict = dict()
 commandsPositionDict = dict()
+laPutaVarDeLaCelia = dict()
+counter = 0
 
 keyword_found = False
 #green = LED(4)
 #red = LED(3)
 
+counter = 0
 
 @bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
 def get_binary_audio(esp_id, eof):
-
+    if counter == 0:
+        counter = 0
     # ESP32 is sending us audio buffer!
     
     global keyword_found
+    #global counter
 
     ide = request.remote_addr
     data = request.data
     
+    #print("Dades rebudes: {}".format(str(data)))
+    #myfile = open("/home/pi/Desktop/python_raspi/app/routes/audio_input"+str(counter)+".txt", "a")
+    #myfile.write(str(data))  
+            
     # 20 bytes of data include 10 samples of audio (8 bit + 8 bit = 16 bit sample) - 15 bit are useful, 16 bit is 1 but never used. [1:16]
     for i in range(int(len(data)/2)):
         try:
@@ -43,30 +53,39 @@ def get_binary_audio(esp_id, eof):
             # Join the two bytes received into a string and include the 0 necessary for 16 bit variable
             byte = ''.join([str(0)]*(8-len(bin(data[i*2])[2:]))) + bin(data[i*2])[2:] + ''.join([str(0)]*(8-len(bin(data[i*2+1])[2:]))) + bin(data[i*2+1])[2:]      
             
+            # print binary value
+            #print(byte)
+
             # bit 15 has the sign
             sign = byte[1]
 
             # if the sign is 0, positive - map value to int with base 2
             if sign is '0':
-                byte = int(byte[1:16], 2)
+                byte = int(byte[2:16], 2)
             
             # if the sign is 1, negative - ca2 (change 0 to 1 and add 1)
             else:
-                byte = byte[1:16].replace('1','2').replace('0','1').replace('2','0')
-                byte = -(int(byte[1:16], 2) + 1)
+                byte = byte[2:16].replace('1','2').replace('0','1').replace('2','0')
+                byte = -(int(byte[2:16], 2) + 1)
+
+            
+            #myfile.write(str(byte))
+            #myfile.write("\n")
 
         except Exception as e:
             print("Error Interpreting values!")
             print(e)
             byte=0
-        
-
+        laPutaVarDeLaCelia[counter] = byte
+        counter = counter+1
         if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
             feed_keyword_buffer(ide, byte)
             if positionsDict[ide] >= BUFFER_MAX_SIZE-1:
                 # KeyWord Spotting
                 try:
                     response = send_to_ai(0, ide)
+                    print("POSITIONSDICT en keyword NOT FOUND")
+                    print(positionsDict[ide])
                     keyword_found = response.iouti
                 except Exception as e:
                     print(e)
@@ -75,21 +94,25 @@ def get_binary_audio(esp_id, eof):
                     positionsDict[ide] = 0
                     #green.on()
                     pass
+                """ Aixo produeix error al agafar les requests de forma asincrona
                 else:
                     # Truncate
                     buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
                     positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+                """
 
         else:
             feed_command_buffer(ide, byte)
                 
             if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
                 print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+                # Hard coded for demo
+                #eof=1
                 break
 
-    if eof==1 and keyword_found:
+    #myfile.close()
+    if eof is '1' and keyword_found:
         print("End sending cmd")
-
         try:
             response = send_to_ai(keyword_found, ide)
             info_processor.process_AI_data(response)
@@ -112,7 +135,7 @@ def get_binary_audio(esp_id, eof):
         commandsPositionDict[ide] = 0
         positionsDict[ide] = 0
         #green.off()
-        
+    
     return "200, OK"
 
 
@@ -120,12 +143,12 @@ def feed_keyword_buffer(ide, data):
     if ide not in buffersDict:
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
         positionsDict[ide] = 0
+    if positionsDict[ide] < BUFFER_MAX_SIZE-1:
+    #    positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+        buffersDict[ide][int(positionsDict[ide])] = data
+        positionsDict[ide] += 1
 
-    buffersDict[ide][int(positionsDict[ide])] = data
-    positionsDict[ide] += 1
 
-    if positionsDict[ide] >= BUFFER_MAX_SIZE-1:
-        positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
 
 
 def feed_command_buffer(ide, data):
@@ -133,13 +156,34 @@ def feed_command_buffer(ide, data):
         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
         commandsPositionDict[ide] = 0
     if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
-        print("BUG! Buffer is full! Exiting 'for' statement to not crash")
+        printPurple("BUG! Buffer is full! Exiting 'for' statement to not crash")
         return
     commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
     commandsPositionDict[ide] += 1
 
 def send_to_ai(keyword, ide):
+    printPurple("AI")
+    #global counter
+    #counter += 1
     if not keyword:
-        return send_data_request_object(buffersDict[ide], ide, str(positionsDict[ide]), keyword)
+        # Adicio per possible solucio del problema
+        c_buffer = buffersDict[ide]
+        c_offset = positionsDict[ide]
+        # Truncate
+        #buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
+        #positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+        positionsDict[ide] = 0
+        print("c_buffer: ")
+        print(c_buffer)
+        return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
+        # Fi 
+        #return send_data_request_object(buffersDict[ide], ide, str(positionsDict[ide]), keyword)
     else:
+        print("command buffer EN TEORIA PARA EL KEYWORD")
+        print(commandsBufferDict[ide])
+        print("VELIA")
+        print(laPutaVarDeLaCelia)
         return send_data_request_object(commandsBufferDict[ide], ide, str(positionsDict[ide]), keyword)
+
+def printPurple(phrase):
+    print('\033[95m'+phrase+'\033[0m')

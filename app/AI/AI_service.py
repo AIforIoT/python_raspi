@@ -50,7 +50,7 @@ def send_data_request_object(data, esp_id, offset, iouti):
         # Get the index of this audio file
         index = int(latest_file.split('_')[2].replace(".wav",""))
         
-        if index is 10:
+        if index is 200:
             index = 0
         else:
             index += 1
@@ -61,27 +61,34 @@ def send_data_request_object(data, esp_id, offset, iouti):
     #    file.write(str(int(value))+'\n')
     #file.close()
 
-    print("WAV " + str(index) + " created")
+    
 
     array = list(map(int, data))
 
     # Scale those values to -32767 to 32767 (wav format)
-    scaled = np.int16(array/np.max(np.abs(array)) * 32767)
+    #scaled = np.int16(array/np.max(np.abs(array)) * 32767)
+    #scaled = np.int16((array/np.max(20000)) * 32767)
+    scaled = np.int16([i * 2 for i in array])
+
 
     # Write the wav file
     wav_name = folder_name+'/audio_'+str(index)+'.wav'
     write(wav_name, 16000, scaled)
+
+    print("WAV " + str(index) + " created")
    
     # Calls to Artificial Intelligence block and create object to return
     if iouti is 0:
         print("Calling local Keyword detector ...")
         iouti_boolean = dk.detect(wav_name)
+        #iouti_boolean = dk.detect('iouti_anna.wav')
         print("Keyword detected: " + str(iouti_boolean))
         outputM = outputMessage(iouti_boolean,"","","")
         return outputM
     else:
         print("Calling speech detector ...")
-        speech = dc.detect_cloud("light_switch_off.wav")
+        #speech = dc.detect_cloud("light_switch_off.wav")
+        speech = dc.detect_cloud(wav_name)
         print("Text detected: " + str(speech[3]))
         outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
         return outputM

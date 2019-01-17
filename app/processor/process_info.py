@@ -25,6 +25,14 @@ class Info_processor:
         #AI_data -> is location required?
         location_required = AI_data['_outputMessage__location']
 
+        print("ACTION: " + str(action))
+
+        if action == 'E':
+            print("VOLUME REQUESTED BECAUSE OF ERROR")
+            http_service.request_esp_volumes(db_service.get_all_esps())
+            num_rows_deleted = db_service.delete_all_volumes()
+            return
+
         if location_required == True:
             #GET ESP the most recent 'timestamp' from volumes
             timestamp = db_service.get_last_timestamp()
