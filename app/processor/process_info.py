@@ -1,6 +1,5 @@
 from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
-from app.routes.data_controller import reset_all_buffers_data
 #from app.localization.localization import Localization
 import logging, math
 #from app.localization.localization import Localization
@@ -56,16 +55,13 @@ class Info_processor:
             esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(typeObj)
             http_service.request_esp_volumes(esps_with_type_dif_from_requested)
 
-
         #When a decision has been taken: delete all volume entries in the db.
-        reset_all_buffers_data()
         num_rows_deleted = db_service.delete_all_volumes()
 
 
     def request_volume(self):
         http_service.request_esp_volumes(db_service.get_all_esps())
         #Delete all old volume entries in the db.
-        reset_all_buffers_data()
         num_rows_deleted = db_service.delete_all_volumes()
 
     #This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
