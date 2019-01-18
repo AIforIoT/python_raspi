@@ -21,20 +21,15 @@ buffersDict = dict()
 positionsDict = dict()
 commandsBufferDict = dict()
 commandsPositionDict = dict()
-laPutaVarDeLaCelia = dict()
-counter = 0
 
 keyword_found = False
 #green = LED(4)
 #red = LED(3)
 
-counter = 0
 
 @bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
 def get_binary_audio(esp_id, eof):
-    if counter == 0:
-        counter = 0
-    # ESP32 is sending us audio buffer!
+    # ESP32 is sending audio buffer!
     
     global keyword_found
     #global counter
@@ -76,24 +71,29 @@ def get_binary_audio(esp_id, eof):
             print("Error Interpreting values!")
             print(e)
             byte=0
-        laPutaVarDeLaCelia[counter] = byte
-        counter = counter+1
+
         if not keyword_found:  # No keyword detected yet, fill up the buffer and send it to the keyword spotting module
             feed_keyword_buffer(ide, byte)
             if positionsDict[ide] >= BUFFER_MAX_SIZE-1:
                 # KeyWord Spotting
                 try:
                     response = send_to_ai(0, ide)
-                    print("POSITIONSDICT en keyword NOT FOUND")
-                    print(positionsDict[ide])
                     keyword_found = response.iouti
                 except Exception as e:
                     print(e)
 
                 if keyword_found:
+                    #Clean keyword buffer
+                    buffersDict[ide][0:] = 0
                     positionsDict[ide] = 0
-                    #green.on()
                     pass
+
+                else:
+                    #When trying to detect the keyword and not found, move the buffer data and start storing the next data from the middle to the end. (Resetting the values to be filled)
+                    buffersDict[ide][0:int(BUFFER_MAX_SIZE/2-1)] = buffersDict[ide][int(BUFFER_MAX_SIZE/2):]
+                    buffersDict[ide][int(BUFFER_MAX_SIZE/2):] = 0
+                    positionsDict[ide] = int(BUFFER_MAX_SIZE/2)
+
                 """ Aixo produeix error al agafar les requests de forma asincrona
                 else:
                     # Truncate
@@ -103,27 +103,51 @@ def get_binary_audio(esp_id, eof):
 
         else:
             feed_command_buffer(ide, byte)
-                
-            if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
-                print("BUG! Buffer is full! Exiting 'for' statement to not crash")
-                # Hard coded for demo
-                #eof=1
-                break
+            if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE-1:
+                #Buffer with command is empty
+                try:
+                    #Try to process audio
+                    response = send_to_ai(keyword_found, ide)
 
-    #myfile.close()
+                    #If the response has no valuable data, continue listening
+                    action = response.__dict__['_outputMessage__status']
+
+                    if not action == 'E': #An action understood by AI, stop processing the data and process the new info
+                        info_processor.process_AI_data(response)
+                        return
+
+                    else:
+                        #Continue trying to understand command
+                        commandsBufferDict[ide][0:int(BUFFER_CMD_MAX_SIZE/2-1)] = commandsBufferDict[ide][int(BUFFER_CMD_MAX_SIZE/2):]
+                        commandsBufferDict[ide][int(BUFFER_CMD_MAX_SIZE/2):] = 0
+                        commandsPositionDict[ide] = int(BUFFER_CMD_MAX_SIZE/2)
+
+                except Exception as e:
+                    print(e)
+
     if eof is '1' and keyword_found:
         print("End sending cmd")
         try:
+            #Try to process LAST audio
             response = send_to_ai(keyword_found, ide)
-            info_processor.process_AI_data(response)
+
+            #If the response has no valuable data reset all buffers, counters and keyword_found values
+            action = response.__dict__['_outputMessage__status']
+            if not action == 'E': #An action understood by AI, stop processing the data and process the new info
+                info_processor.process_AI_data(response)
+
         except Exception as e:
             print(e)
 
+        #If it is the last frame and there has been no valid command found, start process again
+        info_processor.request_volume()
+
         keyword_found = 0
-        commandsPositionDict[ide] = 0
+        commandsBufferDict[ide][0:] = 0
         positionsDict[ide] = 0
 
-    elif eof==1 and not keyword_found:
+    elif eof is '1' and not keyword_found:
+        '''
         print("End sending keyword")
 
         try:
@@ -131,12 +155,16 @@ def get_binary_audio(esp_id, eof):
             keyword_found = response.iouti
         except Exception as e:
             print(e)
-        
-        commandsPositionDict[ide] = 0
+        '''
+        #If it is the last frame and there has been no keyword found, start process again
+        info_processor.request_volume()
+
+        #End of file and keyword has not been found - Reset keyword buffer and its position counter, and request volume to all ESPs
+        buffersDict[ide][0:] = 0
         positionsDict[ide] = 0
-        #green.off()
+        commandsPositionDict[ide] = 0
     
-    return "200, OK"
+    return "OK", 200
 
 
 def feed_keyword_buffer(ide, data):
@@ -144,27 +172,29 @@ def feed_keyword_buffer(ide, data):
         buffersDict[ide] = np.ndarray([BUFFER_MAX_SIZE])
         positionsDict[ide] = 0
     if positionsDict[ide] < BUFFER_MAX_SIZE-1:
-    #    positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
         buffersDict[ide][int(positionsDict[ide])] = data
         positionsDict[ide] += 1
-
-
 
 
 def feed_command_buffer(ide, data):
     if ide not in commandsBufferDict:
         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
         commandsPositionDict[ide] = 0
-    if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE -1:  # The buffer can overflow here!!
+
+    if commandsPositionDict[ide] < BUFFER_CMD_MAX_SIZE-1:
+        commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
+        commandsPositionDict[ide] += 1
+
+    '''    
+    if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE-1:  # The buffer can overflow here!!
         printPurple("BUG! Buffer is full! Exiting 'for' statement to not crash")
         return
-    commandsBufferDict[ide][int(commandsPositionDict[ide])] = data
-    commandsPositionDict[ide] += 1
+    '''
+
 
 def send_to_ai(keyword, ide):
     printPurple("AI")
-    #global counter
-    #counter += 1
+
     if not keyword:
         # Adicio per possible solucio del problema
         c_buffer = buffersDict[ide]
@@ -173,17 +203,19 @@ def send_to_ai(keyword, ide):
         #buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
         #positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
         positionsDict[ide] = 0
-        print("c_buffer: ")
-        print(c_buffer)
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
         # Fi 
         #return send_data_request_object(buffersDict[ide], ide, str(positionsDict[ide]), keyword)
     else:
-        print("command buffer EN TEORIA PARA EL KEYWORD")
-        print(commandsBufferDict[ide])
-        print("VELIA")
-        print(laPutaVarDeLaCelia)
         return send_data_request_object(commandsBufferDict[ide], ide, str(positionsDict[ide]), keyword)
 
 def printPurple(phrase):
     print('\033[95m'+phrase+'\033[0m')
+
+
+def reset_all_buffers_data():
+    keyword_found = 0
+    buffersDict = 0
+    positionsDict = 0
+    commandsBufferDict = 0
+    commandsPositionDict = 0
