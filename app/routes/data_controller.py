@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from flask import Blueprint, request
 import numpy as np
+from app.models.data_request_object import FrameData
 from app.processor.process_info import Info_processor
 from app.AI.AI_service import send_data_request_object
 
