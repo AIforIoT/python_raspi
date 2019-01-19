@@ -12,7 +12,7 @@ bp = Blueprint('data_controller', __name__)
 info_processor = Info_processor()
 #info_processor.request_volume()
 
-BUFFER_MAX_SIZE = 32000  # Size of the buffer (To be changed)
+BUFFER_MAX_SIZE = 16000  # Size of the buffer (To be changed)
 BUFFER_CMD_MAX_SIZE = 64000  # Size of the buffer that will save the whole audio. (To be changed)
 
 # Declare buffers
@@ -86,13 +86,14 @@ def get_binary_audio(esp_id, eof):
                         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
 
                     # Once the keyword has been found, fill the commands buffer with the samples of the keyword buffer (do not miss anything)
-                    commandsBufferDict[ide][0:] = 0
-                    commandsBufferDict[ide][0:int(BUFFER_MAX_SIZE)] = buffersDict[ide][0:]
-                    commandsPositionDict[ide] = BUFFER_MAX_SIZE
+                    #commandsBufferDict[ide][0:positionsDict[ide]] = np.copy(buffersDict[ide][0:positionsDict[ide]])
+                    commandsPositionDict[ide] = positionsDict[ide]
 
                     # Clean keyword buffer
-                    buffersDict[ide][0:] = 0
-                    positionsDict[ide] = 0
+                    #buffersDict[ide][0:] = 0
+                    #positionsDict[ide] = 0
+					
+                    #print("COMMAND POSITION: {}".format(commandsPositionDict[ide]))
 
         # If the keyword is found, feed the command buffer
         else:
@@ -102,7 +103,7 @@ def get_binary_audio(esp_id, eof):
             if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE:
                 try:
                     # Check if the buffer contains any command
-                    response = send_to_ai(keyword_found, ide)
+                    response = send_to_ai(1, ide)
 
                     # If the response has not been understood as a real command ('E')
                     action = response.__dict__['_outputMessage__status']
@@ -113,8 +114,8 @@ def get_binary_audio(esp_id, eof):
                         info_processor.process_AI_data(response)
 
                         # Clean command buffer
-                        commandsBufferDict[ide][0:] = 0
-                        commandsPositionDict[ide] = 0
+                        #commandsBufferDict[ide][0:] = 0
+                        #commandsPositionDict[ide] = 0
 
                 except Exception as e:
                     print(e)
@@ -171,7 +172,7 @@ def feed_keyword_buffer(ide, data):
 
 
 def feed_command_buffer(ide, data):
-    if ide not in commandsBufferDict:
+    if ide not in commandsBufferDict or ide not in commandsPositionDict:
         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
         commandsPositionDict[ide] = 0
 
@@ -187,17 +188,17 @@ def send_to_ai(keyword, ide):
         c_buffer = np.copy(buffersDict[ide])
         c_offset = np.copy(positionsDict[ide])
         # Truncate
-        buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
-        buffersDict[ide][int(BUFFER_MAX_SIZE / 2):] = 0
-        positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-        #positionsDict[ide] = 0
+        #buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
+        #buffersDict[ide][int(BUFFER_MAX_SIZE / 2):] = 0
+        #positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+        positionsDict[ide] = 0
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
 
     else:
         c_buffer = np.copy(commandsBufferDict[ide])
         c_offset = np.copy(commandsPositionDict[ide])
         # It is not necessary to truncate as the response to the command buffer will be unique (Error or understood)
-        commandsBufferDict[ide][:] = 0
+        #commandsBufferDict[ide][:] = 0
         commandsPositionDict[ide] = 0
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
         #return send_data_request_object(commandsBufferDict[ide], ide, str(commandsPositionDict[ide]), keyword)
