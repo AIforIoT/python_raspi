@@ -83,12 +83,12 @@ def get_binary_audio(esp_id, eof):
                     if ide not in commandsBufferDict:
                         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
 
-                    #Once the keyword has been found, fill the commands buffer with the of the data of the keyword buffer
+                    # Once the keyword has been found, fill the commands buffer with the of the data of the keyword buffer
                     commandsBufferDict[ide][0:] = 0
                     commandsBufferDict[ide][0:int(BUFFER_MAX_SIZE)] = buffersDict[ide][0:]
                     commandsPositionDict[ide] = BUFFER_MAX_SIZE
 
-                    #Clean keyword buffer
+                    # Clean keyword buffer
                     buffersDict[ide][0:] = 0
                     positionsDict[ide] = 0
                     pass
@@ -102,7 +102,7 @@ def get_binary_audio(esp_id, eof):
         else:
             feed_command_buffer(ide, byte)
             if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE:
-                #Buffer with command is empty
+                # Buffer with command is empty
                 try:
                     #Try to process audio
                     response = send_to_ai(keyword_found, ide)
@@ -149,9 +149,9 @@ def get_binary_audio(esp_id, eof):
         except Exception as e:
             print(e)
 
-        #Clean command buffer and reset keyword_found
-        commandsBufferDict[ide][:] = 0
-        commandsPositionDict[ide] = 0
+        # Clean command buffer and reset keyword_found
+        #commandsBufferDict[ide][:] = 0
+        #commandsPositionDict[ide] = 0
         keyword_found = 0
 
 
@@ -160,7 +160,7 @@ def get_binary_audio(esp_id, eof):
         #If it is the last frame and there has been no keyword found, start process again: request volume to all ESPs
         info_processor.request_volume()
 
-        #Clean command buffer and reset keyword_found
+        # Clean command buffer and reset keyword_found
         buffersDict[ide][:] = 0
         positionsDict[ide] = 0
         keyword_found = 0
@@ -203,12 +203,11 @@ def send_to_ai(keyword, ide):
     else:
         c_buffer = np.copy(commandsBufferDict[ide])
         c_offset = np.copy(commandsPositionDict[ide])
-        # Truncate
-        commandsBufferDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = commandsBufferDict[ide][int(BUFFER_MAX_SIZE / 2):]
-        commandsPositionDict[ide] = int(BUFFER_MAX_SIZE / 2)
+        # It is not necessary to truncate as the response to the command buffer will be unique (Error or understood)
+        commandsBufferDict[ide][:] = 0
+        commandsPositionDict[ide] = 0
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
         #return send_data_request_object(commandsBufferDict[ide], ide, str(commandsPositionDict[ide]), keyword)
-
 
 def printPurple(phrase):
     print('\033[95m'+phrase+'\033[0m')

@@ -1,7 +1,6 @@
 from app.database.db_service import DBService
 from app.models.data_request_object import FrameData
 from app.models.AI_outMessage import outputMessage
-#from flask_xmlrpcre.xmlrepcre import Fault
 
 #Artificial Intelligence imports
 from local_keyword_detection import detect_keyword as dk
