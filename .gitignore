@@ -98,13 +98,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-
-
-#AI repo
+# AI repo
 artificial_intelligence/
 local_keyword_detection/
 
 # Audios generated from ESP
 app/AI/audio/
-
-*.wav

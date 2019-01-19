@@ -93,12 +93,12 @@ def get_binary_audio(esp_id, eof):
                     positionsDict[ide] = 0
                     pass
 
-                else:
+                """else:
                     #When trying to detect the keyword and not found, move the buffer data and start storing the next data from the middle to the end. (Resetting the values to be filled)
                     buffersDict[ide][0:int(BUFFER_MAX_SIZE/2)] = buffersDict[ide][int(BUFFER_MAX_SIZE/2):]
                     buffersDict[ide][int(BUFFER_MAX_SIZE/2):] = 0
                     positionsDict[ide] = int(BUFFER_MAX_SIZE/2)
-
+                """
         else:
             feed_command_buffer(ide, byte)
             if commandsPositionDict[ide] >= BUFFER_CMD_MAX_SIZE:
@@ -117,15 +117,15 @@ def get_binary_audio(esp_id, eof):
                         #Clean command buffer
                         commandsBufferDict[ide][0:] = 0
                         commandsPositionDict[ide] = 0
-                        return
+                        #return
 
-                    else:
+                    """else:
                         print("La comanda ha anat al AI pero no s'ha enteès!!")
                         #Continue trying to understand command
                         commandsBufferDict[ide][0:int(BUFFER_CMD_MAX_SIZE/2)] = commandsBufferDict[ide][int(BUFFER_CMD_MAX_SIZE/2):]
                         commandsBufferDict[ide][int(BUFFER_CMD_MAX_SIZE/2):] = 0
                         commandsPositionDict[ide] = int(BUFFER_CMD_MAX_SIZE/2)
-
+                    """
                 except Exception as e:
                     print(e)
 
@@ -150,7 +150,7 @@ def get_binary_audio(esp_id, eof):
             print(e)
 
         #Clean command buffer and reset keyword_found
-        commandsBufferDict[ide][0:] = 0
+        commandsBufferDict[ide][:] = 0
         commandsPositionDict[ide] = 0
         keyword_found = 0
 
@@ -161,8 +161,8 @@ def get_binary_audio(esp_id, eof):
         info_processor.request_volume()
 
         #Clean command buffer and reset keyword_found
-        commandsBufferDict[ide][0:] = 0
-        commandsPositionDict[ide] = 0
+        buffersDict[ide][:] = 0
+        positionsDict[ide] = 0
         keyword_found = 0
 
     return "OK", 200
@@ -192,16 +192,22 @@ def send_to_ai(keyword, ide):
     printPurple("AI")
 
     if not keyword:
-        c_buffer = buffersDict[ide]
-        c_offset = positionsDict[ide]
+        c_buffer = np.copy(buffersDict[ide])
+        c_offset = np.copy(positionsDict[ide])
         # Truncate
-        #buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
-        #positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
-        positionsDict[ide] = 0
+        buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
+        positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
+        #positionsDict[ide] = 0
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
 
     else:
-        return send_data_request_object(commandsBufferDict[ide], ide, str(positionsDict[ide]), keyword)
+        c_buffer = np.copy(commandsBufferDict[ide])
+        c_offset = np.copy(commandsPositionDict[ide])
+        # Truncate
+        commandsBufferDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = commandsBufferDict[ide][int(BUFFER_MAX_SIZE / 2):]
+        commandsPositionDict[ide] = int(BUFFER_MAX_SIZE / 2)
+        return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
+        #return send_data_request_object(commandsBufferDict[ide], ide, str(commandsPositionDict[ide]), keyword)
 
 
 def printPurple(phrase):
