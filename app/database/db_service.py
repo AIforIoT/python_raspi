@@ -107,8 +107,33 @@ class DBService:
         sqlVOLUMEdata = VOLUMEdata(volume_data.esp_id, volume_data.timestamp, volume_data.delay, volume_data.volume)
         db_session.add(sqlVOLUMEdata)
         db_session.commit()
+    
+    ### --- NEW --- ###
+    def update_registered_esp_volume_data(self, volume_data):
+        count =VOLUMEdata.query.filter_by(esp_id=volume_data.esp_id).count()
+        db_session.commit()
+
+        if(count==0):
+            return
+        obj = VOLUMEdata.query.filter_by(esp_id=volume_data.esp_id).one()
+
+        if(obj is not None):
+            print("tnt")
+            db_session.delete(obj)
+            db_session.commit()
+        self.save_volume_data(volume_data)
+
+    def is_esp_id_present_in_volume(self, esp_id):
+        vols = VOLUMEdata.query.filter_by(esp_id=esp_id).all()
+        db_session.commit()
+        if(len(vols)==0):
+            return False
+        else:
+            return True
+    ##################
 
 
+    
     #Delete all volume_data entities stored in the #####
     def delete_all_volumes(self):
         num_rows_deleted = db_session.query(VOLUMEdata).delete()
