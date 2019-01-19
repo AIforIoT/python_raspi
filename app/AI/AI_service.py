@@ -88,6 +88,6 @@ def send_data_request_object(data, esp_id, offset, iouti):
         print("Calling speech detector ...")
         #speech = dc.detect_cloud("light_switch_off.wav")
         speech = dc.detect_cloud(wav_name)
-        print("Text detected: " + str(speech[3]))
+        #print("Text detected: " + str(speech[3]))
         outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
         return outputM

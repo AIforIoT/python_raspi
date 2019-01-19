@@ -27,6 +27,7 @@ class Info_processor:
         location_required = AI_data['_outputMessage__location']
 
         print("ACTION: " + str(action))
+        print("LOCATION: " + str(location_required))
 
         if action == 'E':
             print("VOLUME REQUESTED BECAUSE OF ERROR")
