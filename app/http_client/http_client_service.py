@@ -4,8 +4,8 @@ def enum(**enums):
     return type('Enum', (), enums)
 
 DEFAULT_ACTIONS = enum(
-    ON=1,
-    OFF=0
+    ON='H',
+    OFF='L'
 )
 
 REQUEST_PATH= enum(
