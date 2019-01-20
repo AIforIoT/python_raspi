@@ -10,6 +10,7 @@ def open_conn(host):
 class HTTP_CLIENT:
 
     def send_GET_request(self, host, action):
+        print("Sending to {}".format(action))
         try:
             conn = open_conn(host)
             conn.request("GET", action)

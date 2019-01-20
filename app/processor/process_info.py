@@ -35,7 +35,7 @@ class Info_processor:
             num_rows_deleted = db_service.delete_all_volumes()
             return
 
-        if location_required == True:
+        if location_required == 'H' or location_required == 'L':
             #GET ESP the most recent 'timestamp' from volumes
             timestamp = db_service.get_last_timestamp()
 
