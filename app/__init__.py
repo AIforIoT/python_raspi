@@ -3,7 +3,9 @@ from app.database.database import db_session, init_db
 from app.routes import voice_routes, data_controller, test_db_endpoints
 from app.data_service import data_service
 from app.models.data_request_object import FrameData
+import os
 
+os.remove('/tmp/test.db')
 
 app = Flask(__name__)
 app.register_blueprint(voice_routes.bp)

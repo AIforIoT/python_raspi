@@ -60,14 +60,14 @@ class Data_service:
         #Save volume in db
         volume_data = Volume_data(esp_id, timestamp, delay, volume)
         ### --- OLD --- ###
-        db_service.save_volume_data(volume_data)
+        #db_service.save_volume_data(volume_data)
         ###################
 
         ### --- NEW --- ###
-        #if db_service.is_esp_id_present_in_volume(esp_id):
-        #    db_service.update_registered_esp_volume_data(volume_data)
-        #else:
-        #    db_service.save_volume_data(volume_data)
+        if db_service.is_esp_id_present_in_volume(esp_id):
+            db_service.update_registered_esp_volume_data(volume_data)
+        else:
+            db_service.save_volume_data(volume_data)
         ##################
         print("Volume saved")
 
