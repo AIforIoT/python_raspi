@@ -53,7 +53,7 @@ class ESPdata(Base):
 class VOLUMEdata(Base):
     __tablename__ = 'volume_data'
     id = Column(Integer, primary_key=True)
-    esp_id = Column(String(50), unique=False)
+    esp_id = Column(String(50), unique=True)
     timestamp = Column(String(50))
     delay = Column(String(50))
     volume = Column(String(50))
