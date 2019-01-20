@@ -29,34 +29,38 @@ class Info_processor:
         print("ACTION: " + str(action))
         print("LOCATION: " + str(location_required))
 
-        if action == 'E':
-            print("VOLUME REQUESTED BECAUSE OF ERROR")
-            http_service.request_esp_volumes(db_service.get_all_esps())
-            num_rows_deleted = db_service.delete_all_volumes()
-            return
+        #if action == 'E':
+        #    print("VOLUME REQUESTED BECAUSE OF ERROR")
+        #    http_service.request_esp_volumes(db_service.get_all_esps())
+        #    num_rows_deleted = db_service.delete_all_volumes()
+        #    return
 
-        if location_required == 'H' or location_required == 'L':
-            #GET ESP the most recent 'timestamp' from volumes
+        if location_required == 'H': #or location_required == 'L':
+            # GET ESP the most recent 'timestamp' from volumes
             timestamp = db_service.get_last_timestamp()
 
             # Get x,y coordenates from speaker
             #x, y = localization.get_x_y() #TODO: GET PARAMS!!!
-            x, y = 1, 2
-            esp_id = self.get_closest_esp_by_type(x, y, typeObj)
-
+            # NOT WORKING YET
+            #x, y = 1, 2
+            #esp_id = self.get_closest_esp_by_type(x, y, typeObj)
+            #print(self.get_closest_esp_by_type(x, y, typeObj))
+            esp_id = '192.168.5.12'
             http_service.send_http_action_to_esp_id(esp_id, action)
-            leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
-            http_service.request_esp_volumes(leftover_esp_list)
+            #leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
+            #http_service.request_esp_volumes(leftover_esp_list)
+            self.request_volume()
 
-        else: #location_required == False
+        else: #location_required == 'L'
 
             esps_with_requested_type = db_service.get_esp_by_type(typeObj)
             http_service.send_http_action(esps_with_requested_type, action)
 
-            esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(typeObj)
-            http_service.request_esp_volumes(esps_with_type_dif_from_requested)
+            #esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(typeObj)
+            #http_service.request_esp_volumes(esps_with_type_dif_from_requested)
+            self.request_volume()
 
-        #When a decision has been taken: delete all volume entries in the db.
+        # When a decision has been taken: delete all volume entries in the db.
         num_rows_deleted = db_service.delete_all_volumes()
 
 

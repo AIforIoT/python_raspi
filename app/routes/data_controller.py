@@ -107,7 +107,6 @@ def get_binary_audio(esp_id, eof):
 
                     # If the response has not been understood as a real command ('E')
                     action = response.__dict__['_outputMessage__status']
-                    print("Action: " + str(action))
 
                     # An action has been understood by AI, stop processing the audio data and process the new info
                     if action == 'H' or action == 'L':
@@ -128,7 +127,6 @@ def get_binary_audio(esp_id, eof):
 
             # If the response has no valuable data reset all buffers, counters and keyword_found values
             action = response.__dict__['_outputMessage__status']
-            print("Action: "+str(action))
 
             if action == 'H' or action == 'L': #An action has been understood by AI, stop processing the audio data and process the new info
                 info_processor.process_AI_data(response)

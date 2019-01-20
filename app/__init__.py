@@ -5,7 +5,10 @@ from app.data_service import data_service
 from app.models.data_request_object import FrameData
 import os
 
-os.remove('/tmp/test.db')
+try:
+    os.remove('/tmp/test.db')
+except:
+    print("Database does not exist")
 
 app = Flask(__name__)
 app.register_blueprint(voice_routes.bp)
