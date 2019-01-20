@@ -183,3 +183,12 @@ def test_ai():
     print("**************************ESTIC FENT EL PUTO TEST")
     data = [10, 20]
     response = send_data_request_object(data, "192.168.5.12", 344234, 1)
+
+
+
+
+
+@bp.route('/testProc', methods=['GET'])
+def test_processor():
+    print( type(info_processor.get_closest_esp_by_type(1,2,"light")) )
+    return 'OK',200

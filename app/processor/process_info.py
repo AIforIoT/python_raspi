@@ -20,7 +20,7 @@ class Info_processor:
         AI_data = AI_data.__dict__
 
         #AI_data object get type (ei: light, blind, other): esp_type
-        typeObj = AI_data['device']
+        typeObj = AI_data['_outputMessage__typeObj'].lower()
         #AI_data -> get action: High or Low -> High=1, Low=0
         action = AI_data['_outputMessage__status']
         #AI_data -> is location required?
@@ -28,7 +28,7 @@ class Info_processor:
 
         print("ACTION: " + str(action))
         print("LOCATION: " + str(location_required))
-
+        print("typeObj: " + typeObj)
         #if action == 'E':
         #    print("VOLUME REQUESTED BECAUSE OF ERROR")
         #    http_service.request_esp_volumes(db_service.get_all_esps())
@@ -42,17 +42,18 @@ class Info_processor:
             # Get x,y coordenates from speaker
             #x, y = localization.get_x_y() #TODO: GET PARAMS!!!
             # NOT WORKING YET
-            #x, y = 1, 2
-            #esp_id = self.get_closest_esp_by_type(x, y, typeObj)
+            x, y = 1, 2
+            esp_id = self.get_closest_esp_by_type(x, y, typeObj)
+            print(esp_id)
             #print(self.get_closest_esp_by_type(x, y, typeObj))
-            esp_id = '192.168.5.12'
+            #esp_id = '192.168.5.12'
             http_service.send_http_action_to_esp_id(esp_id, action)
             #leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
             #http_service.request_esp_volumes(leftover_esp_list)
             self.request_volume()
 
         else: #location_required == 'L'
-
+            
             esps_with_requested_type = db_service.get_esp_by_type(typeObj)
             http_service.send_http_action(esps_with_requested_type, action)
 
@@ -74,9 +75,9 @@ class Info_processor:
         #return esp_id_of_closest_esp_with_esp_type
         dists_dict = {}
         for esp in db_service.get_esp_by_type(esp_type):
+            print(esp)
             dists_dict[esp["_ESP_data__esp_id"]] = math.sqrt((float(x) - float(esp["_ESP_data__x"]))**2 + (float(y) -     float(esp["_ESP_data__y"]))**2)
 
-        print(dists_dict)
         ids=list(dists_dict.keys())
         distances=list(dists_dict.values())
 

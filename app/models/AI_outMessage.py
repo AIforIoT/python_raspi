@@ -10,7 +10,7 @@ class outputMessage:
         self.iouti = iouti
         self.status = status
         self.location = location
-        self.device = typeObj
+        self.typeObj = typeObj
 
     @property
     def iouti(self):
