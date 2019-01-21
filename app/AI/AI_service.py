@@ -61,26 +61,31 @@ def send_data_request_object(data, esp_id, offset, iouti):
     #file.close()
 
     
+    try:
+        array = list(map(int, data))
 
-    array = list(map(int, data))
+        # Scale those values to -32767 to 32767 (wav format)
+        #scaled = np.int16(array/np.max(np.abs(array)) * 32767)
+        #scaled = np.int16((array/np.max(20000)) * 32767)
+        scaled = np.int16([i * 2 for i in array])
 
-    # Scale those values to -32767 to 32767 (wav format)
-    #scaled = np.int16(array/np.max(np.abs(array)) * 32767)
-    #scaled = np.int16((array/np.max(20000)) * 32767)
-    scaled = np.int16([i * 2 for i in array])
+        # Write the wav file
+        wav_name = folder_name+'/audio_'+str(index)+'.wav'
+        write(wav_name, 16000, scaled)
 
+        print("WAV " + str(index) + " created")
+    except:
+        print("WAV can't be created, too few samples")
 
-    # Write the wav file
-    wav_name = folder_name+'/audio_'+str(index)+'.wav'
-    write(wav_name, 16000, scaled)
+        # Redirect to the last file created
+        wav_name = folder_name+'/audio_'+str(index-1)+'.wav'
 
-    print("WAV " + str(index) + " created")
    
     # Calls to Artificial Intelligence block and create object to return
     if iouti is 0:
         print("Calling local Keyword detector ...")
-        iouti_boolean = dk.detect(wav_name)
-        #iouti_boolean = dk.detect('iouti_anna.wav')
+        #iouti_boolean = dk.detect(wav_name)
+        iouti_boolean = dk.detect('biel_2.wav')
         print("Keyword detected: " + str(iouti_boolean))
         outputM = outputMessage(iouti_boolean,"","","")
         return outputM

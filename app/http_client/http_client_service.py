@@ -51,4 +51,6 @@ class Http_service:
     #This method inform all esps in the 'list_esp' no data is requested
     def reject_esp_data(self, list_esps):
         for esp in list_esps:
+            print("esps /data/off: ")
+            print(list_esps)
             http_client.send_GET_request(esp['_Volume_data__esp_id'], REQUEST_PATH.DATA_OFF)

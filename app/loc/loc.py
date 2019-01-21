@@ -30,8 +30,21 @@ class Localization:
             self.target.add_measure(anchor, float(db.get_delay_by_esp_id(anchor)))
 
     def solve(self):
-        self.P.solve()
-        return self.target.loc, self.label_target
+        try:
+            self.P.solve()
+        except Exception as e:
+            print("ERROR on solve!!!!!!!!!!!1111")
+            print(e)
+            return
+        if self.target.loc.x is not None:
+            x = self.target.loc.x
+        else: 
+            x = 0
+        if self.target.loc.y is not None:
+            y = self.target.loc.y
+        else:
+            y = 0          
+        return x, y
 
     def get_x_y(self, type):
         anchors = []
@@ -44,8 +57,24 @@ class Localization:
         a,b = self.solve()
         return a,b
 
-    def get_x_y_direct(self,type):
-        for anchor in db.get_esp_by_type(type):
-            self.P.add_anchor(anchor["_ESP_data__esp_id"], (float(anchor["_ESP_data__x"]), float(anchor["_ESP_data__y"])))
-            self.target.add_measure(anchor["_ESP_data__esp_id"], float(db.get_delay_by_esp_id(anchor["_ESP_data__esp_id"])))
-        return self.solve()
+    def get_x_y_direct(self):
+        try:
+            print("Test oscarMiquel: :)")
+            print(db.get_all_esps())
+            for anchor in db.get_all_esps():
+                x = float(anchor["_ESP_data__x"])
+                y = float(anchor["_ESP_data__y"])
+                self.P.add_anchor(anchor["_ESP_data__esp_id"], (x, y))
+                measure = db.get_delay_by_esp_id(anchor["_ESP_data__esp_id"])
+                if measure is not None:
+                    measure = float(measure)/240000000
+                    print(measure)
+                    self.target.add_measure(anchor["_ESP_data__esp_id"], measure)
+                print("past get x_y direct. DONE")
+            x, y = self.solve()
+            print("loc.x = "+str(x)+". loc.y = "+str(y))
+            return x, y
+        except Exception as e:
+            print(e)
+            pass
+    

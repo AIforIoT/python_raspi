@@ -34,6 +34,11 @@ class Data_service:
         active_esp_volume_with_max_volume = db_service.get_volume_data_by_timestamp_and_volume_is_max(timestamp)
         active_esp_volumes_low_pw = db_service.get_volume_data_by_timestamp_and_esp_id_is_different(timestamp, active_esp_volume_with_max_volume['_Volume_data__esp_id'])
         time.sleep(ESP_CHANGING_TIME)
+        print("Volum mes alt: ")
+        print(active_esp_volume_with_max_volume['_Volume_data__volume'])
+        print("altres volums: ")
+        for fuck in active_esp_volumes_low_pw:
+            print (fuck['_Volume_data__volume'])
         http_client.reject_esp_data(active_esp_volumes_low_pw)
         http_client.request_esp_data(active_esp_volume_with_max_volume['_Volume_data__esp_id'])
 

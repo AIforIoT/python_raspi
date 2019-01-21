@@ -1,13 +1,10 @@
 from app.database.db_service import DBService
 from app.http_client.http_client_service import Http_service
-#from app.localization.localization import Localization
+from app.loc.loc import Localization
 import logging, math
-#from app.localization.localization import Localization
-import logging
-import math
 
 db_service = DBService()
-#localization = Localization()
+localization = Localization()
 http_service = Http_service()
 
 
@@ -40,16 +37,28 @@ class Info_processor:
             timestamp = db_service.get_last_timestamp()
 
             # Get x,y coordenates from speaker
-            #x, y = localization.get_x_y() #TODO: GET PARAMS!!!
-            # NOT WORKING YET
-            x, y = 1, 2
-            esp_id = self.get_closest_esp_by_type(x, y, typeObj)
+            try:
+                x,y = localization.get_x_y_direct() #TODO: GET PARAMS!!!
+                print(x)
+                print(y)
+                print(type(x))
+                esp_id = self.get_closest_esp_by_type(x, y, typeObj)
+                print(esp_id)
+            except Exception as e:
+                print("Can't locate the position")
+                x, y = 1, 2
+                esp_id = db_service.get_esp_id_volume_max(typeObj)
+
             print(esp_id)
-            #print(self.get_closest_esp_by_type(x, y, typeObj))
-            #esp_id = '192.168.5.12'
-            http_service.send_http_action_to_esp_id(esp_id, action)
+            if esp_id is not None:
+
+                # NOT WORKING YET            
+                #print(self.get_closest_esp_by_type(x, y, typeObj))
+                http_service.send_http_action_to_esp_id(esp_id, action)
+
             #leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
             #http_service.request_esp_volumes(leftover_esp_list)
+
             self.request_volume()
 
         else: #location_required == 'L'
@@ -75,7 +84,6 @@ class Info_processor:
         #return esp_id_of_closest_esp_with_esp_type
         dists_dict = {}
         for esp in db_service.get_esp_by_type(esp_type):
-            print(esp)
             dists_dict[esp["_ESP_data__esp_id"]] = math.sqrt((float(x) - float(esp["_ESP_data__x"]))**2 + (float(y) -     float(esp["_ESP_data__y"]))**2)
 
         ids=list(dists_dict.keys())

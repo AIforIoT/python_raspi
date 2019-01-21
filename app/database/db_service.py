@@ -169,6 +169,20 @@ class DBService:
         volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
         return volume_data.__dict__
 
+    def get_esp_id_volume_max(self, type):
+        VOLdata = VOLUMEdata.query.order_by(desc(VOLUMEdata.volume)).first()
+        if VOLdata is None:
+            return None     
+        else:
+            volume_data = mapper.VOLUMEdata_to_volume_data(VOLdata)
+            esp_id = volume_data.esp_id
+            for esp in self.get_esp_by_type(type):
+                if str(esp_id) == (esp['_ESP_data__esp_ip']):
+                    return esp_id
+            return None
+
+
+
     #Return the volume_data object with 'timestamp' #####
     def get_all_volumes_by_timestamp(self, timestamp):
         results = VOLUMEdata.query.filter_by(timestamp=timestamp)
