@@ -68,7 +68,7 @@ class Localization:
                 measure = db.get_delay_by_esp_id(anchor["_ESP_data__esp_id"])
                 if measure is not None:
                     measure = float(measure)/240000000
-                    print(measure)
+                    print("measure: "+str(measure))
                     self.target.add_measure(anchor["_ESP_data__esp_id"], measure)
                 print("past get x_y direct. DONE")
             x, y = self.solve()

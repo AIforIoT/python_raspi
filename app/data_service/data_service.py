@@ -37,8 +37,8 @@ class Data_service:
         print("Volum mes alt: ")
         print(active_esp_volume_with_max_volume['_Volume_data__volume'])
         print("altres volums: ")
-        for fuck in active_esp_volumes_low_pw:
-            print (fuck['_Volume_data__volume'])
+        for low_pw_esp in active_esp_volumes_low_pw:
+            print (low_pw_esp['_Volume_data__volume'])
         http_client.reject_esp_data(active_esp_volumes_low_pw)
         http_client.request_esp_data(active_esp_volume_with_max_volume['_Volume_data__esp_id'])
 
