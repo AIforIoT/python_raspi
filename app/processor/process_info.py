@@ -18,21 +18,18 @@ class Info_processor:
 
         #AI_data object get type (ei: light, blind, other): esp_type
         typeObj = AI_data['_outputMessage__typeObj'].lower()
+		
         #AI_data -> get action: High or Low -> High=1, Low=0
         action = AI_data['_outputMessage__status']
+		
         #AI_data -> is location required?
         location_required = AI_data['_outputMessage__location']
 
         print("ACTION: " + str(action))
         print("LOCATION: " + str(location_required))
-        print("typeObj: " + typeObj)
-        #if action == 'E':
-        #    print("VOLUME REQUESTED BECAUSE OF ERROR")
-        #    http_service.request_esp_volumes(db_service.get_all_esps())
-        #    num_rows_deleted = db_service.delete_all_volumes()
-        #    return
+        print("TYPE: " + typeObj)
 
-        if location_required == 'H': #or location_required == 'L':
+        if location_required == 'H':
             # GET ESP the most recent 'timestamp' from volumes
             timestamp = db_service.get_last_timestamp()
 
@@ -50,14 +47,9 @@ class Info_processor:
                 esp_id = db_service.get_esp_id_volume_max(typeObj)
 
             print(esp_id)
-            if esp_id is not None:
-
-                # NOT WORKING YET            
-                #print(self.get_closest_esp_by_type(x, y, typeObj))
+            
+			if esp_id is not None:
                 http_service.send_http_action_to_esp_id(esp_id, action)
-
-            #leftover_esp_list = db_service.get_esp_with_esp_id_different_from(esp_id)
-            #http_service.request_esp_volumes(leftover_esp_list)
 
             self.request_volume()
 
@@ -65,9 +57,6 @@ class Info_processor:
             
             esps_with_requested_type = db_service.get_esp_by_type(typeObj)
             http_service.send_http_action(esps_with_requested_type, action)
-
-            #esps_with_type_dif_from_requested = db_service.get_esp_with_type_different(typeObj)
-            #http_service.request_esp_volumes(esps_with_type_dif_from_requested)
             self.request_volume()
 
         # When a decision has been taken: delete all volume entries in the db.
@@ -76,12 +65,12 @@ class Info_processor:
 
     def request_volume(self):
         http_service.request_esp_volumes(db_service.get_all_esps())
-        #Delete all old volume entries in the db.
+		
+        # Delete all old volume entries in the db.
         num_rows_deleted = db_service.delete_all_volumes()
 
-    #This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
+    # This method returns the esp_id of the closest esp to the position(x,y) that has 'type'
     def get_closest_esp_by_type(self, x, y, esp_type):
-        #return esp_id_of_closest_esp_with_esp_type
         dists_dict = {}
         for esp in db_service.get_esp_by_type(esp_type):
             dists_dict[esp["_ESP_data__esp_id"]] = math.sqrt((float(x) - float(esp["_ESP_data__x"]))**2 + (float(y) -     float(esp["_ESP_data__y"]))**2)

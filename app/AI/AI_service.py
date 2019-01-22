@@ -54,19 +54,10 @@ def send_data_request_object(data, esp_id, offset, iouti):
         else:
             index += 1
 
-    # Save the values received
-    #file = open(folder_name+"/audio_mic.txt","w")
-    #for value in data:
-    #    file.write(str(int(value))+'\n')
-    #file.close()
-
-    
     try:
         array = list(map(int, data))
 
         # Scale those values to -32767 to 32767 (wav format)
-        #scaled = np.int16(array/np.max(np.abs(array)) * 32767)
-        #scaled = np.int16((array/np.max(20000)) * 32767)
         scaled = np.int16([i * 2 for i in array])
 
         # Write the wav file
@@ -74,6 +65,7 @@ def send_data_request_object(data, esp_id, offset, iouti):
         write(wav_name, 16000, scaled)
 
         print("WAV " + str(index) + " created")
+
     except:
         print("WAV can't be created, too few samples")
 
@@ -84,15 +76,15 @@ def send_data_request_object(data, esp_id, offset, iouti):
     # Calls to Artificial Intelligence block and create object to return
     if iouti is 0:
         print("Calling local Keyword detector ...")
-        #iouti_boolean = dk.detect(wav_name)
-        iouti_boolean = dk.detect('biel_2.wav')
+        iouti_boolean = dk.detect(wav_name)
+		
         print("Keyword detected: " + str(iouti_boolean))
+		
         outputM = outputMessage(iouti_boolean,"","","")
         return outputM
     else:
         print("Calling speech detector ...")
-        #speech = dc.detect_cloud("light_switch_off.wav")
         speech = dc.detect_cloud(wav_name)
-        #print("Text detected: " + str(speech[3]))
+		
         outputM = outputMessage(False,str(speech[0]),str(speech[1]),str(speech[2]))
         return outputM

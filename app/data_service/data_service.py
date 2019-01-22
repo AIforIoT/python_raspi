@@ -50,8 +50,8 @@ class Data_service:
         timestamp = jsonData['timestamp']
         delay = jsonData['delay']
         volume = jsonData['volume']
-        #print(len(db_service.get_all_volumes_by_timestamp(timestamp)))
-        #If it is the first volume received for 'timestamp', start timer
+		
+        # If it is the first volume received for 'timestamp', start timer
         if len(db_service.get_all_volumes_by_timestamp(timestamp)) == 0:
 
             #Delete previous db entries for past timestamps:
@@ -64,15 +64,10 @@ class Data_service:
 
         #Save volume in db
         volume_data = Volume_data(esp_id, timestamp, delay, volume)
-        ### --- OLD --- ###
-        #db_service.save_volume_data(volume_data)
-        ###################
-
-        ### --- NEW --- ###
+		
         if db_service.is_esp_id_present_in_volume(esp_id):
             db_service.update_registered_esp_volume_data(volume_data)
         else:
             db_service.save_volume_data(volume_data)
-        ##################
         print("Volume saved")
 

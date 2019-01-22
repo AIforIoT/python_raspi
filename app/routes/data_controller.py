@@ -5,12 +5,9 @@ from app.models.data_request_object import FrameData
 from app.processor.process_info import Info_processor
 from app.AI.AI_service import send_data_request_object
 
-#from gpiozero import LED
-
 bp = Blueprint('data_controller', __name__)
 
 info_processor = Info_processor()
-#info_processor.request_volume()
 
 BUFFER_MAX_SIZE = 16000  # Size of the buffer (To be changed)
 BUFFER_CMD_MAX_SIZE = 64000  # Size of the buffer that will save the whole audio. (To be changed)
@@ -22,8 +19,6 @@ commandsBufferDict = dict()
 commandsPositionDict = dict()
 
 keyword_found = False
-#green = LED(4)
-#red = LED(3)
 
 
 @bp.route('/audio/<esp_id>/<eof>', methods=['POST'])
@@ -41,9 +36,6 @@ def get_binary_audio(esp_id, eof):
 
             # Join the two bytes received into a string and include the 0 necessary for 16 bit variable
             byte = ''.join([str(0)]*(8-len(bin(data[i*2])[2:]))) + bin(data[i*2])[2:] + ''.join([str(0)]*(8-len(bin(data[i*2+1])[2:]))) + bin(data[i*2+1])[2:]
-
-            # Print binary value
-            #print(byte)
 
             # bit 15 has the sign
             sign = byte[1]
@@ -86,14 +78,7 @@ def get_binary_audio(esp_id, eof):
                         commandsBufferDict[ide] = np.ndarray([BUFFER_CMD_MAX_SIZE])
 
                     # Once the keyword has been found, fill the commands buffer with the samples of the keyword buffer (do not miss anything)
-                    #commandsBufferDict[ide][0:positionsDict[ide]] = np.copy(buffersDict[ide][0:positionsDict[ide]])
                     commandsPositionDict[ide] = positionsDict[ide]
-
-                    # Clean keyword buffer
-                    #buffersDict[ide][0:] = 0
-                    #positionsDict[ide] = 0
-					
-                    #print("COMMAND POSITION: {}".format(commandsPositionDict[ide]))
 
         # If the keyword is found, feed the command buffer
         else:
@@ -111,10 +96,6 @@ def get_binary_audio(esp_id, eof):
                     # An action has been understood by AI, stop processing the audio data and process the new info
                     if action == 'H' or action == 'L':
                         info_processor.process_AI_data(response)
-
-                        # Clean command buffer
-                        #commandsBufferDict[ide][0:] = 0
-                        #commandsPositionDict[ide] = 0
 
                 except Exception as e:
                     print(e)
@@ -138,9 +119,6 @@ def get_binary_audio(esp_id, eof):
         except Exception as e:
             print(e)
 
-        # Clean command buffer and reset keyword_found
-        #commandsBufferDict[ide][:] = 0
-        #commandsPositionDict[ide] = 0
         keyword_found = 0
 
 
@@ -180,26 +158,15 @@ def feed_command_buffer(ide, data):
 
 
 def send_to_ai(keyword, ide):
-    printPurple("AI")
 
     if not keyword:
         c_buffer = np.copy(buffersDict[ide])
         c_offset = np.copy(positionsDict[ide])
-        # Truncate
-        #buffersDict[ide][0:int(BUFFER_MAX_SIZE / 2)] = buffersDict[ide][int(BUFFER_MAX_SIZE / 2):]
-        #buffersDict[ide][int(BUFFER_MAX_SIZE / 2):] = 0
-        #positionsDict[ide] = int(BUFFER_MAX_SIZE / 2)
         positionsDict[ide] = 0
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
 
     else:
         c_buffer = np.copy(commandsBufferDict[ide])
         c_offset = np.copy(commandsPositionDict[ide])
-        # It is not necessary to truncate as the response to the command buffer will be unique (Error or understood)
-        #commandsBufferDict[ide][:] = 0
         commandsPositionDict[ide] = 0
         return send_data_request_object(c_buffer, ide, str(c_offset), keyword)
-        #return send_data_request_object(commandsBufferDict[ide], ide, str(commandsPositionDict[ide]), keyword)
-
-def printPurple(phrase):
-    print('\033[95m'+phrase+'\033[0m')
